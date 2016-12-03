@@ -1,0 +1,620 @@
+host: http://api.apit.com
+basePath: /v1
+header:
+    content-type: application/json
+
+project:
+    get project:
+        path: /projects/{id}
+        method: get
+        params:
+            id in_path required string no_limit
+        response: 200
+            {"id":16,
+             "name":"CBOSS",
+             "desc":"Pass API test",
+             "status":0,
+             "create_time":"2016-12-01T09:29:11.255451Z",
+             "variables":{"key":"value","key1":"value2"}
+             }
+
+    get project list:
+        path: /projects?page=1&num=10
+        method: get
+        params:
+            page in_query required int page >= 0
+            num in_query required int 1 < num < 20
+        response: 200
+        {
+            "total": 200,
+            "data" :
+                    [{"id":15,
+                     "name":"CBOSS",
+                     "desc":"Pass API test",
+                     "status":0,
+                     "create_time":"2016-12-01T09:29:11.255451Z",
+                     "variables":{"key":"value","key1":"value2"}
+                     }
+                     {"id":16,
+                     "name":"CBOSS",
+                     "desc":"Pass API test",
+                     "status":0,
+                     "create_time":"2016-12-01T09:29:11.255451Z",
+                     "variables":{"key":"value","key1":"value2"}
+                     }]
+         }
+
+    get project module list:
+        path: /projects/{id}/modules?page=1&num=10
+        method: get
+        params:
+            id in_path required string no_limit
+            page in_query required int page >= 0
+            num in_query required int 1 < num < 20
+        response: 200
+        {
+            "total": 200,
+            "data" :
+                    [{"id":15,
+                     "parent_id":1
+                     "name":"CBOSS",
+                     "desc":"Pass API test",
+                     "status":0,
+                     "create_time":"2016-12-01T09:29:11.255451Z",
+                     "variables":{"key":"value","key1":"value2"}
+                     }
+                     {"id":16,
+                     "parent_id":1
+                     "name":"CBOSS",
+                     "desc":"Pass API test",
+                     "status":0,
+                     "create_time":"2016-12-01T09:29:11.255451Z",
+                     "variables":{"key":"value","key1":"value2"}
+                     }]
+        }
+
+    get project template list:
+        path: /projects/{id}/templates?page=1&num=10
+        method: get
+        params:
+            id in_path required string no_limit
+            page in_query required int page >= 0
+            num in_query required int 1 < num < 20
+        response: 200
+        {
+            "total": 200,
+            "data" :
+                    [{"id":15,
+                     "parent_id":1
+                     "name":"CBOSS",
+                     "desc":"Pass API test",
+                     "status":0,
+                     "create_time":"2016-12-01T09:29:11.255451Z",
+                     }
+                     {"id":16,
+                     "parent_id":1
+                     "name":"CBOSS",
+                     "desc":"Pass API test",
+                     "status":0,
+                     "create_time":"2016-12-01T09:29:11.255451Z",
+                     }]
+        }
+
+    create project:
+        path: /projects/
+        method: post
+        params:
+            name in_body required string 5<len<50
+            desc in_body required string 5<len<1024
+            variables in_body required dict dict
+        response: 200
+            {"id":16,
+             "name":"CBOSS",
+             "desc":"Pass API test",
+             "status":0,
+             "create_time":"2016-12-01T09:29:11.255451Z",
+             "variables":{},
+             }
+
+    update project:
+        path: /projects/{id}
+        method: put
+        params:
+            id in_path required string no_limit
+            name in_body required string 5<len<50
+            desc in_body required string 5<len<1024
+            variables in_body required dict dict
+        response: 200
+            {"id":16,
+             "name":"CBOSS",
+             "desc":"Pass API test",
+             "status":0,
+             "create_time":"2016-12-01T09:29:11.255451Z",
+             "variables":{"key":"value","key1":"value2"}
+             }
+
+    delete project:
+        path: /projects/{id}
+        method: delete
+        params:
+            id in_path required string no_limit
+        response: 200
+
+module:
+    get module:
+        path: /modules/{id}
+        method: get
+        params:
+            id in_path required string no_limit
+        response: 200
+            {"id":16,
+             "parent_id":1
+             "name":"CBOSS",
+             "desc":"Pass API test",
+             "status":0,
+             "create_time":"2016-12-01T09:29:11.255451Z",
+             "variables":{"key":"value","key1":"value2"}
+             }
+
+    get module case list:
+        path: /modules/{id}/cases?page=1&num=10
+        method: get
+        params:
+            id in_path required string no_limit
+            page in_query required int page >= 0
+            num in_query required int 1 < num < 20
+        response: 200
+        {
+            "total": 200,
+            "data" :
+                    [{"id":15,
+                     "parent_id":1
+                     "name":"CBOSS",
+                     "desc":"Pass API test",
+                     "status":0,
+                     "create_time":"2016-12-01T09:29:11.255451Z",
+                     "variables":{"key":"value","key1":"value2"}
+                     }
+                     {"id":16,
+                     "parent_id":1
+                     "name":"CBOSS",
+                     "desc":"Pass API test",
+                     "status":0,
+                     "create_time":"2016-12-01T09:29:11.255451Z",
+                     "variables":{"key":"value","key1":"value2"}
+                     }]
+        }
+
+    create module:
+        path: /modules/
+        method: post
+        params:
+            parent_id in_body required string no_limit
+            name in_body required string 5<len<50
+            desc in_body required string 5<len<1024
+            variables in_body required dict dict
+        response: 200
+            {"id":16,
+             "parent_id":1
+             "name":"CBOSS",
+             "desc":"Pass API test",
+             "status":0,
+             "create_time":"2016-12-01T09:29:11.255451Z",
+             "variables":{},
+             }
+
+    update module:
+        path: /modules/{id}
+        method: put
+        params:
+            id in_path required string no_limit
+            name in_body required string 5<len<50
+            desc in_body required string 5<len<1024
+            variables in_body required dict dict
+        response: 200
+            {"id":16,
+             "parent_id":1
+             "name":"CBOSS",
+             "desc":"Pass API test",
+             "status":0,
+             "create_time":"2016-12-01T09:29:11.255451Z",
+             "variables":{"key":"value","key1":"value2"}
+             }
+
+    delete module:
+        path: /modules/{id}
+        method: delete
+        params:
+            id in_path required string no_limit
+        response: 200
+
+template:
+    get template:
+        path: /templates/{id}
+        method: get
+        params:
+            id in_path required string no_limit
+        response: 200
+            {"id":16,
+             "parent_id":1
+             "name":"CBOSS",
+             "desc":"Pass API test",
+             "status":0,
+             "create_time":"2016-12-01T09:29:11.255451Z",
+             }
+
+    create template:
+        path: /templates/
+        method: post
+        params:
+            parent_id in_body required string no_limit
+            name in_body required string 5<len<50
+            desc in_body required string 5<len<1024
+        response: 200
+            {"id":16,
+             "parent_id":1
+             "name":"CBOSS",
+             "desc":"Pass API test",
+             "status":0,
+             "create_time":"2016-12-01T09:29:11.255451Z",
+             }
+
+    update template:
+        path: /templates/{id}
+        method: put
+        params:
+            id in_path required string no_limit
+            name in_body required string 5<len<50
+            desc in_body required string 5<len<1024
+        response: 200
+            {"id":16,
+             "parent_id":1
+             "name":"CBOSS",
+             "desc":"Pass API test",
+             "status":0,
+             "create_time":"2016-12-01T09:29:11.255451Z",
+             }
+
+    delete template:
+        path: /templates/{id}
+        method: delete
+        params:
+            id in_path required string no_limit
+        response: 200
+
+catalog:
+    get catalog:
+        path: /{scope}/{id}
+        method: get
+        params:
+            id in_path required string no_limit
+            scope in_path required string  in ['projects', 'modules', 'templates', 'chunks', 'cases']
+        response: 200
+            {"id":16,
+             "parent_id":1
+             "name":"CBOSS",
+             "desc":"Pass API test",
+             "status":0,
+             "create_time":"2016-12-01T09:29:11.255451Z",
+             "type":"Module",
+             }
+
+    get catalog list:
+        path: /{scope1}/{id}/{scope2}?page=1&num=10
+        method: get
+        params:
+        response: 200
+
+    create catalog:
+        path: /{scope}/
+        method: post
+        params:
+        response: 200
+
+    update catalog:
+        path: /{scope}/{id}
+        method: put
+        params:
+        response: 200
+
+    delete catalog:
+        path: /{scope}/{id}
+        method: put
+        params:
+            scope in_path required string  in ['projects', 'modules', 'templates', 'chunks', 'cases']
+            id in_path required string no_limit
+        response: 200
+
+variable:
+    get scope vars:
+        path: /{scope}/{id}/variables:
+        method: get
+        params:
+            scope in_path required string  in ['projects', 'modules', 'cases']
+        response: 200
+
+    create scope var:
+        path: /{scope}/{id}/variables:
+        method: post
+        params:
+            scope in_path required string  in ['projects', 'modules', 'cases']
+        response: 200
+
+    update scope var:
+        path: /{scope}/{id}/variables/{id}:
+        method: put
+        params:
+            scope in_path required string  in ['projects', 'modules', 'cases']
+        response: 200
+
+    delete scope var:
+        path: /{scope}/{id}/variables/{id}:
+        method: delete
+        params:
+            scope in_path required string  in ['projects', 'modules', 'cases']
+        response: 200
+
+request:
+    get request:
+        path: /{scope}/{id}/requests/{request_id}
+        method: get
+        params:
+            scope in_path required string  in ['templates', 'chunks', 'cases']
+            id in_path required string no_limit
+            request_id in_path required string no_limit
+        response: 200
+        {            "id":1,
+                     "name":"createInstance",
+                     "desc":"sdk",
+                     "is_template":0,
+                     "method":"get",
+                     "url":"http://www.baidu.com",
+                     "params":{"key":"value","key1":"value2"},
+                     "header":{"key":"value","key1":"value2"},
+                     "body":"{"key":"value","key1":"value2"}",
+                     "expect_status":200,
+                     "test_code":"assert 1 == 2",
+                     "skip": 0,
+                     "priority": 0,
+                     }
+
+    get request list:
+        path: /{scope}/{id}/requests?page=1&num=10
+        method: get
+        params:
+            scope in_path required string  in ['templates', 'chunks', 'cases']
+            id in_path required string no_limit
+            page in_query required int page >= 0
+            num in_query required int 1 < num < 20
+        response: 200
+        {
+            "total": 200,
+            "data" :
+                    [{"id":1,
+                     "name":"createInstance",
+                     "desc":"sdk",
+                     "is_template":0,
+                     "method":"get",
+                     "url":"http://www.baidu.com",
+                     "params":{"key":"value","key1":"value2"},
+                     "header":{"key":"value","key1":"value2"},
+                     "body":"{"key":"value","key1":"value2"}",
+                     "expect_status":200,
+                     "test_code":"assert 1 == 2",
+                     "skip": 0,
+                     "priority": 0,
+                     }
+                     {"id":2,
+                     "name":"createInstance",
+                     "desc":"sdk",
+                     "is_template":0,
+                     "method":"get",
+                     "url":"http://www.baidu.com",
+                     "params":{"key":"value","key1":"value2"},
+                     "header":{"key":"value","key1":"value2"},
+                     "body":"{"key":"value","key1":"value2"}",
+                     "expect_status":200,
+                     "test_code":"assert 1 == 2",
+                     "skip": 0,
+                     "priority": 0,
+                     }]
+        }
+
+    create request:
+        path: /{scope}/{id}/requests
+        method: post
+        params:
+            scope in_path required string  in ['templates', 'chunks', 'cases']
+            id in_path required string no_limit
+            name in_body required string 5<len<100
+            desc in_body required string 5<len<1024
+            is_template in_body required int in [0,1]
+            method in_body required string in ['get','post','put','delete']
+            url in_body required string 0<len<500
+            params in_body not_required dict dict
+            header in_body not_required dict dict
+            body in_body not_required string 0<len<1024
+            expect_status in_body int 0< status <1000
+            test_code in_body required string no_limit
+            skip in_body required int in [0,1]
+            priority in_body required int priority >=0
+        response: 200
+        {            "id":1,
+                     "name":"createInstance",
+                     "desc":"sdk",
+                     "is_template":0,
+                     "method":"get",
+                     "url":"http://www.baidu.com",
+                     "params":{"key":"value","key1":"value2"},
+                     "header":{"key":"value","key1":"value2"},
+                     "body":"{"key":"value","key1":"value2"}",
+                     "expect_status":200,
+                     "test_code":"assert 1 == 2",
+                     "skip": 0,
+                     "priority": 0,
+                     }
+
+    put request:
+        path: /{scope}/{id}/requests
+        method: post
+        params:
+            scope in_path required string  in ['templates', 'chunks', 'cases']
+            id in_path required string no_limit
+            name in_body required string 5<len<100
+            desc in_body required string 5<len<1024
+            is_template in_body required int in [0,1]
+            method in_body required string in ['get','post','put','delete']
+            url in_body required string 0<len<500
+            params in_body not_required dict dict
+            header in_body not_required dict dict
+            body in_body not_required string 0<len<1024
+            expect_status in_body int 0< status <1000
+            test_code in_body required string no_limit
+            skip in_body required int in [0,1]
+            priority in_body required int in priority >=0
+        response: 200
+        {            "id":1,
+                     "name":"createInstance",
+                     "desc":"sdk",
+                     "is_template":0,
+                     "method":"get",
+                     "url":"http://www.baidu.com",
+                     "params":{"key":"value","key1":"value2"},
+                     "header":{"key":"value","key1":"value2"},
+                     "body":"{"key":"value","key1":"value2"}",
+                     "expect_status":200,
+                     "test_code":"assert 1 == 2",
+                     "skip": 0,
+                     "priority": 0,
+                     }
+
+    delete request:
+        path: /{scope}/{id}/requests/{request_id}
+        method: delete
+        params:
+            scope in_path required string  in ['templates', 'chunks', 'cases']
+            id in_path required string no_limit
+            request_id in_path required string no_limit
+        response: 200
+db:
+report:
+    get report list:
+        path: /reports
+        method: get
+        params : none
+        response: 200
+        [
+            {
+                "id":1,
+                "start_time":"2016-12-01T09:29:11.255451Z",
+                "end_time":"2016-12-01T09:29:11.255451Z",
+                "project_id":1,
+                "project_name":"IaaS",
+                "case_total":300,
+                "case_pass":300,
+                "case_fail":300,
+                "case_skip":300,
+                "case_error":300,
+            },
+            {
+                "id":2,
+                "start_time":"2016-12-01T09:29:11.255451Z",
+                "end_time":"2016-12-01T09:29:11.255451Z",
+                "project_id":1,
+                "project_name":"IaaS",
+                "case_total":300,
+                "case_pass":300,
+                "case_fail":300,
+                "case_skip":300,
+                "case_error":300,
+            }
+        ]
+
+
+    get report:
+        path: /reports/{id}
+        method: get
+        params:
+            id in_path required string no_limit
+        response: 200
+        {
+                "id":1,
+                "start_time":"2016-12-01T09:29:11.255451Z",
+                "end_time":"2016-12-01T09:29:11.255451Z",
+                "project_id":1,
+                "project_name":"IaaS",
+                "case_total":300,
+                "case_pass":300,
+                "case_fail":300,
+                "case_skip":300,
+                "case_error":300,
+            },
+
+
+    delete report:
+        path: /reports/{id}
+        method: delete
+        params:
+            id in_path required string no_limit
+        response: 200
+
+
+    get report detail:
+        path: /reports/{id}/details
+        method: get
+        params:
+            id in_path required string no_limit
+        response: 200
+        [
+            {
+                "module_name":"Instance",
+                "case_total":400,
+                "case_pass":100,
+                "case_fail":100,
+                "case_skip":100,
+                "case_error":100,
+                "cases":[
+                    {
+                        "case_name": "createInstance1",
+                        "result": "Pass",
+                        "operation_logs":[id1,id2,id3]
+                    },
+                    {
+                        "case_name": "createInstance2",
+                        "result": "Fail",
+                        "operation_logs":[id1,id2,id3]
+                    }
+                ]
+            },
+            {
+                "module_name":"Image",
+                "case_total":400,
+                "case_pass":100,
+                "case_fail":100,
+                "case_skip":100,
+                "case_error":100,
+                "cases":[
+                    {
+                        "case_name": "createImage1",
+                        "result": "Pass",
+                        "operation_logs":[id1,id2,id3]
+                    },
+                    {
+                        "case_name": "createImage2",
+                        "result": "Skip",
+                        "operation_logs":[id1,id2,id3]
+                    }
+                ]
+            }
+        ]
+
+    get report detail log
+        path: /reports/{id}/details/{log_id}
+        method: get
+        params:
+            id in_path required string no_limit
+            log_id in_path required string no_limit
+        response: 200
+            {"type": "request", "operation_info": "..", "operation_result": "..", "assert_result":"Pass", "assert_info":".."}
+
+
