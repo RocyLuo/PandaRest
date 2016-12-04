@@ -9,7 +9,6 @@ class Catalog(models.Model):
         ("Module", 'Module'),
         ("Template", 'Template'),
         ("Case", 'Case'),
-        ("Chunk", 'Chunk'),
     )
     parent = models.ForeignKey('self', on_delete=models.CASCADE, default=-1,blank=True, null=True)
     name = models.CharField(max_length=50)
@@ -18,6 +17,7 @@ class Catalog(models.Model):
     priority = models.SmallIntegerField(default=1)
     type = models.CharField(max_length=50,choices=TYPE_CHOICES)
     create_time = models.DateTimeField(auto_now=True)
+    repeat = models.SmallIntegerField(default=1)
 
     class Meta:
         unique_together = ('name', 'type')
@@ -53,10 +53,13 @@ class RequestOperation(models.Model):
     header = models.CharField(max_length=500,blank=True, null=True)
     params = models.CharField(max_length=300,blank=True, null=True)
     body = models.TextField(blank=True, null=True)
-    priority = models.SmallIntegerField(default=1)
     expect_status =  models.SmallIntegerField(default=200,blank=True, null=True)
     test_code = models.TextField(blank=True, null=True)
-    skip = models.SmallIntegerField(default=0)
+    priority = models.SmallIntegerField(default=1)
+    skip_next = models.SmallIntegerField(default=0)
+    wait_timeout = models.SmallIntegerField(default=0)
+    wait_period = models.SmallIntegerField(default=0)
+    drive_data = models.TextField(default="")
 
     def __str__(self):
         return self.name

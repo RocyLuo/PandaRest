@@ -1,20 +1,23 @@
 import requests
 import re
 import json
+import time
 from userFunctions import *
 
 class Request:
 
-    def __init__(self, header, method, url, params, body,variables,status=200, code=''):
-        self.header = header
-        self.method = method
-        self.url = url
-        self.params = params
-        self.body = body
+    def __init__(self, operation, variables):
+        self.header = self.operation.header
+        self.method = self.operation.method
+        self.url = self.operation.url
+        self.params = self.operation.params
+        self.body = self.operation.body
         self.variables = variables
-        self.expect_status = status
-        self.code = code
-        self.real_url = url
+        self.expect_status = self.operation.expect_status
+        self.code = self.operation.test_code
+        self.real_url = self.operation.url
+        self.operation = operation
+        self.replace_all()
 
     def replace_all(self):
         self.header = self.get_variables(self.header)
@@ -35,9 +38,10 @@ class Request:
             key = matched.group()
             key = key.replace('{', '')
             key = key.replace('}', '')
-            for var in self.variables:
-                if key in var:
-                    return var[key]
+            for vars in self.variables:
+                for var in vars:
+                    if key == var.key:
+                        return var.value
             return matched.group()
 
         return re.sub(r'{{[0-9a-zA-Z]*}}', find_variable, s)
@@ -56,9 +60,16 @@ class Request:
         oper_info["body"] = self.body
         return oper_info
 
-    def request(self,skip):
+    def process_response(self, r):
+        if not self.expect_status is None:
+            assert self.expect_status == r.status_code, 'http status code is wrong'
+        code = self.code.replace('\r\n', ';')
+        exec code
+
+
+    def excute(self, skip):
         """
-        :return: {
+        :return: [{
                     "operation_info": {
                                          "url": "http://wwww.baidu.com/asd?a=1",
                                          "method": "get"
@@ -71,40 +82,48 @@ class Request:
                                          }
                     "assert_result" : "Pass"
                     "assert_info" : "str(e)"
-                 }
+                 },......
+                 ]
         """
-
-        self.replace_all()
         result = {}
         result['operation_info'] = self.get_request_info()
+
+        def send_request():
+            try:
+                response = requests.request(self.method, self.url, params=self.params, data=self.body,
+                                            headers=self.header)
+                result["operation_result"] = {"status_code": response.status_code, "body": response.text}
+                self.process_response(response)
+            except AssertionError, e:
+                result['assert_result'] = "Fail"
+                result['assert_info'] = str(e)
+            except Exception, e:
+                result['assert_result'] = "Error"
+                result['assert_info'] = str(e)
+            else:
+                result['assert_result'] = "Pass"
+                result['assert_info'] = ""
 
         if skip:
             result["operation_result"] = None
             result['assert_result'] = "Skip"
             result['assert_info'] = ""
-            return result
-
-        try:
-            response = requests.request(self.method, self.url, params = self.params, data = self.body, headers = self.header)
-            result["operation_result"] = {"status_code": response.status_code,"body": response.text}
-            self.process_response(response)
-        except AssertionError, e:
-            result['assert_result'] = "Fail"
-            result['assert_info'] = str(e)
-        except Exception, e:
-            result['assert_result'] = "Error"
-            result['assert_info'] = str(e)
+            yield result
         else:
-            result['assert_result'] = "Pass"
-            result['assert_info'] = ""
-
-        return result
-
-    def process_response(self, r):
-        if not self.expect_status is None:
-            assert self.expect_status == r.status_code, 'check status code'
-        code = self.code.replace('\r\n', ';')
-        exec code
+            timeout = self.operation.wait_timeout
+            period = self.operation.wati_period
+            if timeout > 0 and period > 0:
+                pass_result = False
+                while timeout > 0 and not pass_result:
+                    timeout -= period
+                    time.sleep(period)
+                    send_request()
+                    if result['assert_result'] == "Pass":
+                        pass_result = True
+                    yield result
+            else:
+                send_request()
+                yield result
 
 
 

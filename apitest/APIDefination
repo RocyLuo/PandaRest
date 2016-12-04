@@ -3,285 +3,6 @@ basePath: /v1
 header:
     content-type: application/json
 
-project:
-    get project:
-        path: /projects/{id}
-        method: get
-        params:
-            id in_path required string no_limit
-        response: 200
-            {"id":16,
-             "name":"CBOSS",
-             "desc":"Pass API test",
-             "status":0,
-             "create_time":"2016-12-01T09:29:11.255451Z",
-             "variables":{"key":"value","key1":"value2"}
-             }
-
-    get project list:
-        path: /projects?page=1&num=10
-        method: get
-        params:
-            page in_query required int page >= 0
-            num in_query required int 1 < num < 20
-        response: 200
-        {
-            "total": 200,
-            "data" :
-                    [{"id":15,
-                     "name":"CBOSS",
-                     "desc":"Pass API test",
-                     "status":0,
-                     "create_time":"2016-12-01T09:29:11.255451Z",
-                     "variables":{"key":"value","key1":"value2"}
-                     }
-                     {"id":16,
-                     "name":"CBOSS",
-                     "desc":"Pass API test",
-                     "status":0,
-                     "create_time":"2016-12-01T09:29:11.255451Z",
-                     "variables":{"key":"value","key1":"value2"}
-                     }]
-         }
-
-    get project module list:
-        path: /projects/{id}/modules?page=1&num=10
-        method: get
-        params:
-            id in_path required string no_limit
-            page in_query required int page >= 0
-            num in_query required int 1 < num < 20
-        response: 200
-        {
-            "total": 200,
-            "data" :
-                    [{"id":15,
-                     "parent_id":1
-                     "name":"CBOSS",
-                     "desc":"Pass API test",
-                     "status":0,
-                     "create_time":"2016-12-01T09:29:11.255451Z",
-                     "variables":{"key":"value","key1":"value2"}
-                     }
-                     {"id":16,
-                     "parent_id":1
-                     "name":"CBOSS",
-                     "desc":"Pass API test",
-                     "status":0,
-                     "create_time":"2016-12-01T09:29:11.255451Z",
-                     "variables":{"key":"value","key1":"value2"}
-                     }]
-        }
-
-    get project template list:
-        path: /projects/{id}/templates?page=1&num=10
-        method: get
-        params:
-            id in_path required string no_limit
-            page in_query required int page >= 0
-            num in_query required int 1 < num < 20
-        response: 200
-        {
-            "total": 200,
-            "data" :
-                    [{"id":15,
-                     "parent_id":1
-                     "name":"CBOSS",
-                     "desc":"Pass API test",
-                     "status":0,
-                     "create_time":"2016-12-01T09:29:11.255451Z",
-                     }
-                     {"id":16,
-                     "parent_id":1
-                     "name":"CBOSS",
-                     "desc":"Pass API test",
-                     "status":0,
-                     "create_time":"2016-12-01T09:29:11.255451Z",
-                     }]
-        }
-
-    create project:
-        path: /projects/
-        method: post
-        params:
-            name in_body required string 5<len<50
-            desc in_body required string 5<len<1024
-            variables in_body required dict dict
-        response: 200
-            {"id":16,
-             "name":"CBOSS",
-             "desc":"Pass API test",
-             "status":0,
-             "create_time":"2016-12-01T09:29:11.255451Z",
-             "variables":{},
-             }
-
-    update project:
-        path: /projects/{id}
-        method: put
-        params:
-            id in_path required string no_limit
-            name in_body required string 5<len<50
-            desc in_body required string 5<len<1024
-            variables in_body required dict dict
-        response: 200
-            {"id":16,
-             "name":"CBOSS",
-             "desc":"Pass API test",
-             "status":0,
-             "create_time":"2016-12-01T09:29:11.255451Z",
-             "variables":{"key":"value","key1":"value2"}
-             }
-
-    delete project:
-        path: /projects/{id}
-        method: delete
-        params:
-            id in_path required string no_limit
-        response: 200
-
-module:
-    get module:
-        path: /modules/{id}
-        method: get
-        params:
-            id in_path required string no_limit
-        response: 200
-            {"id":16,
-             "parent_id":1
-             "name":"CBOSS",
-             "desc":"Pass API test",
-             "status":0,
-             "create_time":"2016-12-01T09:29:11.255451Z",
-             "variables":{"key":"value","key1":"value2"}
-             }
-
-    get module case list:
-        path: /modules/{id}/cases?page=1&num=10
-        method: get
-        params:
-            id in_path required string no_limit
-            page in_query required int page >= 0
-            num in_query required int 1 < num < 20
-        response: 200
-        {
-            "total": 200,
-            "data" :
-                    [{"id":15,
-                     "parent_id":1
-                     "name":"CBOSS",
-                     "desc":"Pass API test",
-                     "status":0,
-                     "create_time":"2016-12-01T09:29:11.255451Z",
-                     "variables":{"key":"value","key1":"value2"}
-                     }
-                     {"id":16,
-                     "parent_id":1
-                     "name":"CBOSS",
-                     "desc":"Pass API test",
-                     "status":0,
-                     "create_time":"2016-12-01T09:29:11.255451Z",
-                     "variables":{"key":"value","key1":"value2"}
-                     }]
-        }
-
-    create module:
-        path: /modules/
-        method: post
-        params:
-            parent_id in_body required string no_limit
-            name in_body required string 5<len<50
-            desc in_body required string 5<len<1024
-            variables in_body required dict dict
-        response: 200
-            {"id":16,
-             "parent_id":1
-             "name":"CBOSS",
-             "desc":"Pass API test",
-             "status":0,
-             "create_time":"2016-12-01T09:29:11.255451Z",
-             "variables":{},
-             }
-
-    update module:
-        path: /modules/{id}
-        method: put
-        params:
-            id in_path required string no_limit
-            name in_body required string 5<len<50
-            desc in_body required string 5<len<1024
-            variables in_body required dict dict
-        response: 200
-            {"id":16,
-             "parent_id":1
-             "name":"CBOSS",
-             "desc":"Pass API test",
-             "status":0,
-             "create_time":"2016-12-01T09:29:11.255451Z",
-             "variables":{"key":"value","key1":"value2"}
-             }
-
-    delete module:
-        path: /modules/{id}
-        method: delete
-        params:
-            id in_path required string no_limit
-        response: 200
-
-template:
-    get template:
-        path: /templates/{id}
-        method: get
-        params:
-            id in_path required string no_limit
-        response: 200
-            {"id":16,
-             "parent_id":1
-             "name":"CBOSS",
-             "desc":"Pass API test",
-             "status":0,
-             "create_time":"2016-12-01T09:29:11.255451Z",
-             }
-
-    create template:
-        path: /templates/
-        method: post
-        params:
-            parent_id in_body required string no_limit
-            name in_body required string 5<len<50
-            desc in_body required string 5<len<1024
-        response: 200
-            {"id":16,
-             "parent_id":1
-             "name":"CBOSS",
-             "desc":"Pass API test",
-             "status":0,
-             "create_time":"2016-12-01T09:29:11.255451Z",
-             }
-
-    update template:
-        path: /templates/{id}
-        method: put
-        params:
-            id in_path required string no_limit
-            name in_body required string 5<len<50
-            desc in_body required string 5<len<1024
-        response: 200
-            {"id":16,
-             "parent_id":1
-             "name":"CBOSS",
-             "desc":"Pass API test",
-             "status":0,
-             "create_time":"2016-12-01T09:29:11.255451Z",
-             }
-
-    delete template:
-        path: /templates/{id}
-        method: delete
-        params:
-            id in_path required string no_limit
-        response: 200
-
 catalog:
     get catalog:
         path: /{scope}/{id}
@@ -295,63 +16,97 @@ catalog:
              "name":"CBOSS",
              "desc":"Pass API test",
              "status":0,
+             "repeat":12,
+             "priority":1,
              "create_time":"2016-12-01T09:29:11.255451Z",
              "type":"Module",
              }
 
-    get catalog list:
+    get catalog sub list:
         path: /{scope1}/{id}/{scope2}?page=1&num=10
         method: get
         params:
+            id in_path required string no_limit
+            scope1 in_path required string  in ['projects', 'modules', 'templates', 'chunks', 'cases']
+            scope2 in_path required string  in ['projects', 'modules', 'templates', 'chunks', 'cases']
+            page in_query required int page >= 0
+            num in_query required int 1 < num < 20
         response: 200
 
     create catalog:
         path: /{scope}/
         method: post
         params:
+            scope in_path required string  in ['projects', 'modules', 'templates', 'chunks', 'cases']
+            parent_id in_body required string no_limit
+            name in_body required string 5<len<50
+            desc in_body required string 5<len<1024
+            priority in_boy required int >=0
+            repeat in_body required int >=0
         response: 200
 
     update catalog:
         path: /{scope}/{id}
         method: put
         params:
+            scope in_path required string  in ['projects', 'modules', 'templates', 'chunks', 'cases']
+            id in_body required string no_limit
+            name in_body required string 5<len<50
+            desc in_body required string 5<len<1024
+            priority in_boy required int >=0
+            repeat in_body required int >=0
         response: 200
 
     delete catalog:
         path: /{scope}/{id}
-        method: put
+        method: delete
         params:
             scope in_path required string  in ['projects', 'modules', 'templates', 'chunks', 'cases']
             id in_path required string no_limit
         response: 200
 
 variable:
-    get scope vars:
+    get catalog vars:
         path: /{scope}/{id}/variables:
         method: get
         params:
             scope in_path required string  in ['projects', 'modules', 'cases']
+            id in_path required string no_limit
         response: 200
+            [
+            {"key":"key1","value":"test"},{"key":"key1","value":"test"}
+            ]
 
-    create scope var:
+    create catalog var:
         path: /{scope}/{id}/variables:
         method: post
         params:
             scope in_path required string  in ['projects', 'modules', 'cases']
+            id in_path required string no_limit
+            key in_body required string letters or num
+            value in_body required string len<1024
         response: 200
+            {"key":"key1","value":"test"}
 
-    update scope var:
-        path: /{scope}/{id}/variables/{id}:
+    update catalog var:
+        path: /{scope}/{id}/variables/{var_id}:
         method: put
         params:
             scope in_path required string  in ['projects', 'modules', 'cases']
+            id in_path required string no_limit
+            var_id in_path required string no_limit
+            key in_body required string letters or num
+            value in_body required string len<1024
         response: 200
+            {"key":"key1","value":"test"}
 
-    delete scope var:
-        path: /{scope}/{id}/variables/{id}:
+    delete catalog var:
+        path: /{scope}/{id}/variables/{var_id}:
         method: delete
         params:
             scope in_path required string  in ['projects', 'modules', 'cases']
+            id in_path required string no_limit
+            var_id in_path required string no_limit
         response: 200
 
 request:
@@ -438,6 +193,10 @@ request:
             test_code in_body required string no_limit
             skip in_body required int in [0,1]
             priority in_body required int priority >=0
+            repeat in_body required int repeat >=0
+            wait_timeout in_body required int wait_timeout >=0
+            wait_period in_body required int wait_period >=0
+            drive_data in_body required dict dict or ""
         response: 200
         {            "id":1,
                      "name":"createInstance",
@@ -470,8 +229,13 @@ request:
             body in_body not_required string 0<len<1024
             expect_status in_body int 0< status <1000
             test_code in_body required string no_limit
-            skip in_body required int in [0,1]
-            priority in_body required int in priority >=0
+            skip_next in_body required int in [0,1]
+            priority in_body required int priority >=0
+            repeat in_body required int repeat >=0
+            wait_timeout in_body required int wait_timeout >=0
+            wait_period in_body required int wait_period >=0
+            drive_data in_body required dict dict or ""
+
         response: 200
         {            "id":1,
                      "name":"createInstance",
