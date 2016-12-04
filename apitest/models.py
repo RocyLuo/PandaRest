@@ -79,8 +79,8 @@ class DBOperation(models.Model):
 
 class Report(models.Model):
 
-    start_time = models.CharField(max_length=14)
-    end_time = models.CharField(max_length=14, blank=True, null=True)
+    start_time = models.DateTimeField(auto_now=True)
+    end_time = models.DateTimeField(blank=True, null=True)
     project_id = models.IntegerField()
     project_name = models.CharField(max_length=50)
     case_total = models.SmallIntegerField(default=0, blank=True, null=True)
