@@ -4,7 +4,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from models import Catalog
 from serializers import CatalogSerializer
-from libs.Runner import Runner
+from libs.functions import *
 
 
 class JSONResponse(HttpResponse):
@@ -167,11 +167,11 @@ def case_detail(request, case_pk):
 
 def test(request,pk):
     try:
-        catalog = Catalog.objects.get(pk=pk)
+        Catalog.objects.get(pk=pk)
     except Catalog.DoesNotExist:
         return HttpResponse(status=404)
-    runner = Runner()
-    runner.run(pk)
+
+    run(pk)
 
     return HttpResponse(status=200)
 

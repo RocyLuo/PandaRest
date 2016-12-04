@@ -7,15 +7,15 @@ from userFunctions import *
 class Request:
 
     def __init__(self, operation, variables):
-        self.header = self.operation.header
-        self.method = self.operation.method
-        self.url = self.operation.url
-        self.params = self.operation.params
-        self.body = self.operation.body
+        self.header = operation.header
+        self.method = operation.method
+        self.url = operation.url
+        self.params = operation.params
+        self.body = operation.body
         self.variables = variables
-        self.expect_status = self.operation.expect_status
-        self.code = self.operation.test_code
-        self.real_url = self.operation.url
+        self.expect_status = operation.expect_status
+        self.code = operation.test_code
+        self.real_url = operation.url
         self.operation = operation
         self.replace_all()
 
@@ -111,7 +111,7 @@ class Request:
             yield result
         else:
             timeout = self.operation.wait_timeout
-            period = self.operation.wati_period
+            period = self.operation.wait_period
             if timeout > 0 and period > 0:
                 pass_result = False
                 while timeout > 0 and not pass_result:

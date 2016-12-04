@@ -12,12 +12,13 @@ def run(catalog_id):
     """
     # it is the most complicated core logic function
     # so, get a couple of coffee
-    catalog = Catalog.objects().get(pk=catalog_id)
+    catalog = Catalog.objects.get(pk=catalog_id)
     cases = get_catalog_cases(catalog)
     project = get_catalog_project(catalog)
     report = create_report(project, cases)
     for case in cases:
         skip = False
+        print "ff=============ffffff"+str(case)
         path = get_case_path(case)
         variables = get_case_variables(case)
         operations = get_case_operations(case)
@@ -28,7 +29,7 @@ def run(catalog_id):
                 if isinstance(operation, RequestOperation):
                     request = Request(operation, variables)
                     for result in request.excute(skip):
-                        if operation.skip == 1 and not result["assert_result"] == "Pass":
+                        if operation.skip_next == 1 and not result["assert_result"] == "Pass":
                             skip = True
                         save_request_operation_log(report, path, result)
                 if isinstance(operation, DBOperation):
@@ -45,12 +46,12 @@ def get_catalog_cases(catalog):
     def recur_catalog(catalog):
         if catalog.type == 'Case':
             result.append(catalog)
-        children = Catalog.objects().all().filter(parent__id=catalog.id).exclude(type='Template').order_by('priority')
+        children = Catalog.objects.all().filter(parent__id=catalog.id).exclude(type='Template').order_by('priority')
         for child in children:
             recur_catalog(child)
 
     recur_catalog(catalog)
-
+    print "get catalog cases===="+str(result)
     return result
 
 
@@ -60,15 +61,19 @@ def get_case_path(case):
     :return:[catalog(case),catalog(module),catalog(project)]
     """
     result = []
+    print str(case)
 
     def recur_catalog_up(catalog):
+        print "recur_catalog_up ====="+str(catalog)
+        print "ffffffff"+str(catalog.parent_id)
         result.append(catalog)
-        if not catalog.parent_id is None or catalog.parent_id == -1:
-            parent = Catalog.objects().all().filter(pk=catalog.parent.id).exclude(type='Template')
+
+        if not catalog.parent_id is None:
+            parent = Catalog.objects.get(pk=catalog.parent.id)
             recur_catalog_up(parent)
 
     recur_catalog_up(case)
-
+    print "get case path====" + str(result)
     return result
 
 
@@ -77,6 +82,7 @@ def get_catalog_project(catalog):
     :param catalog:
     :return: project
     """
+
     return get_case_path(catalog)[-1]
 
 
@@ -89,6 +95,7 @@ def get_case_variables(case):
     catalogs = get_case_path(case)
     for catalog in catalogs:
         result.append(Variable.objects.all().filter(catalog__id=catalog.id))
+    print "get catalog variables====" + str(result)
     return result
 
 
@@ -101,6 +108,7 @@ def get_case_operations(case):
     result.extend(RequestOperation.objects.filter(catalog__id=case.id))
     result.extend(DBOperation.objects.filter(catalog__id=case.id))
     result = sorted(result, key=lambda model: model.priority)
+    print "get catalog operations====" + str(result)
     return result
 
 
@@ -149,4 +157,12 @@ def create_report(project, cases):
     report.case_error = 0
     report.case_skip = 0
     report.save()
+    return report
+
+
+def update_report_result(report):
+    """
+    :param report:
+    :return:
+    """
     return report

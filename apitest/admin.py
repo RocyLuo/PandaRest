@@ -11,7 +11,7 @@ from .models import *
 admin.site.register(RequestOperation)
 admin.site.register(DBOperation)
 admin.site.register(OperationLog)
-
+admin.site.register(Report)
 
 class VaribaleInline(admin.StackedInline):
     model = Variable

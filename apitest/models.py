@@ -59,7 +59,7 @@ class RequestOperation(models.Model):
     skip_next = models.SmallIntegerField(default=0)
     wait_timeout = models.SmallIntegerField(default=0)
     wait_period = models.SmallIntegerField(default=0)
-    drive_data = models.TextField(default="")
+    drive_data = models.TextField(default="",blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -109,5 +109,5 @@ class OperationLog(models.Model):
     assert_info = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return self.project_name+':'+self.module_name+':'+self.case_name+' type:'+self.type+" |"+self.assert_result+'|'+self.assert_info
+        return str(self.report.start_time)+':'+self.module_name+':'+self.case_name+' type:'+self.type+" |"+self.assert_result+'|'+self.assert_info
 
