@@ -1,8 +1,9 @@
 
 class Database:
 
-    def __init__(self):
-        pass
+    def __init__(self, operation, variables):
+        self.operation = operation
+        self.variables = variables
 
-    def excute(self,sql):
-        print 'excute_sql:'+sql
+    def excute(self,skip):
+        print 'excute_sql:'+str(self.operation)

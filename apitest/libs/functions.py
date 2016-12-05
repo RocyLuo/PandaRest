@@ -4,6 +4,8 @@
 """
 from ..models import *
 from  Request import Request
+from Database import *
+
 
 def run(catalog_id):
     """
@@ -18,7 +20,6 @@ def run(catalog_id):
     report = create_report(project, cases)
     for case in cases:
         skip = False
-        print "ff=============ffffff"+str(case)
         path = get_case_path(case)
         variables = get_case_variables(case)
         operations = get_case_operations(case)
@@ -33,7 +34,11 @@ def run(catalog_id):
                             skip = True
                         save_request_operation_log(report, path, result)
                 if isinstance(operation, DBOperation):
-                    pass
+                    db = Database(operation,variables)
+                    for result in db.excute(skip):
+                        if operation.skip_next == 1 and not result["assert_result"] == "Pass":
+                            skip = True
+                        save_db_operation_log(report, path, result)
 
 
 def get_catalog_cases(catalog):
@@ -51,7 +56,6 @@ def get_catalog_cases(catalog):
             recur_catalog(child)
 
     recur_catalog(catalog)
-    print "get catalog cases===="+str(result)
     return result
 
 
@@ -61,11 +65,8 @@ def get_case_path(case):
     :return:[catalog(case),catalog(module),catalog(project)]
     """
     result = []
-    print str(case)
 
     def recur_catalog_up(catalog):
-        print "recur_catalog_up ====="+str(catalog)
-        print "ffffffff"+str(catalog.parent_id)
         result.append(catalog)
 
         if not catalog.parent_id is None:
@@ -95,7 +96,6 @@ def get_case_variables(case):
     catalogs = get_case_path(case)
     for catalog in catalogs:
         result.append(Variable.objects.all().filter(catalog__id=catalog.id))
-    print "get catalog variables====" + str(result)
     return result
 
 
@@ -108,7 +108,6 @@ def get_case_operations(case):
     result.extend(RequestOperation.objects.filter(catalog__id=case.id))
     result.extend(DBOperation.objects.filter(catalog__id=case.id))
     result = sorted(result, key=lambda model: model.priority)
-    print "get catalog operations====" + str(result)
     return result
 
 

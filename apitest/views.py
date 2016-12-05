@@ -63,6 +63,7 @@ def project_detail(request, pk):
         catalog.delete()
         return HttpResponse(status=204)
 
+
 @csrf_exempt
 def project_module_list(request, pk):
     """
@@ -87,6 +88,7 @@ def module_post(request):
             serializer.save()
             return JSONResponse(serializer.data, status=201)
         return JSONResponse(serializer.errors, status=400)
+
 
 @csrf_exempt
 def module_detail(request, module_pk):
@@ -114,6 +116,7 @@ def module_detail(request, module_pk):
         catalog.delete()
         return HttpResponse(status=204)
 
+
 @csrf_exempt
 def module_case_list(request, pk):
     """
@@ -138,6 +141,7 @@ def case_post(request):
             serializer.save()
             return JSONResponse(serializer.data, status=201)
         return JSONResponse(serializer.errors, status=400)
+
 
 @csrf_exempt
 def case_detail(request, case_pk):
@@ -164,6 +168,7 @@ def case_detail(request, case_pk):
     elif request.method == 'DELETE':
         catalog.delete()
         return HttpResponse(status=204)
+
 
 def test(request,pk):
     try:

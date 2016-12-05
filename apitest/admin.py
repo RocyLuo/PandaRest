@@ -8,7 +8,6 @@ from .models import *
 
 # admin.site.register(ChunkHasDBOperation)
 # admin.site.register(ChunkHasRequestOperation)
-admin.site.register(RequestOperation)
 admin.site.register(DBOperation)
 admin.site.register(OperationLog)
 admin.site.register(Report)

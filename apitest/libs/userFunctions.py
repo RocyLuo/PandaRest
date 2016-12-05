@@ -1,4 +1,6 @@
 
+temp_vars = []
+
 def code_filter(code_str):
     pass
 
