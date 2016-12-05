@@ -36,7 +36,8 @@ def catalog_list(request, scope):
             data["type"] = scope
             data["status"] = 0
             if scope == 'Project':
-                data["parent_id"] = -1
+                data["parent"] = -1
+
             serializer = CatalogSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
@@ -85,8 +86,12 @@ def var_list(request, scope, scope_id):
     """
     List all code catalogs, or create a new catalog.
     """
-    scope_list = ['projects', 'modules', 'templates', 'cases']
+    scope_list = ['projects', 'modules', 'cases']
     if scope in scope_list:
+        try:
+            catalog = Catalog.objects.all().get(pk=scope_id)
+        except Catalog.DoesNotExist:
+            return HttpResponse(status=404)
         if request.method == 'GET':
             vars = Variable.objects.all().filter(catalog__id=scope_id)
             serializer = VariableSerializer(vars, many=True)
@@ -94,11 +99,11 @@ def var_list(request, scope, scope_id):
 
         elif request.method == 'POST':
             data = JSONParser().parse(request)
-            serializer = CatalogSerializer(data=data)
-            serializer.type = scope
+            data["catalog"] = scope_id
+            serializer = VariableSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
-                return JSONResponse(serializer.data, status=201)
+                return JSONResponse(serializer.data, status=200)
             return JSONResponse(serializer.errors, status=400)
     else:
         return HttpResponse(status=404)
@@ -109,36 +114,105 @@ def var_detail(request, scope, scope_id, var_id):
     """
     Retrieve, update or delete a code catalog.
     """
-    scope_list = ['projects', 'modules', 'templates', 'cases']
+    scope_list = ['projects', 'modules', 'cases']
     if scope in scope_list:
         scope = scope[0:-1].capitalize()
         try:
-            catalogs = Catalog.objects.all().filter(pk=scope_id,type=scope)
-            if len(catalogs) > 0:
-                catalog = catalogs[0]
+            vars = Variable.objects.all().filter(catalog__id=scope_id,pk=var_id)
+            if len(vars) > 0:
+                var = vars[0]
             else:
                 return HttpResponse(status=404)
         except Catalog.DoesNotExist:
             return HttpResponse(status=404)
 
         if request.method == 'GET':
-            serializer = CatalogSerializer(catalog)
+            serializer = VariableSerializer(var)
             return JSONResponse(serializer.data)
 
         elif request.method == 'PUT':
             data = JSONParser().parse(request)
-            serializer = CatalogSerializer(catalog, data=data)
+            serializer = VariableSerializer(var, data=data,partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return JSONResponse(serializer.data)
             return JSONResponse(serializer.errors, status=400)
 
         elif request.method == 'DELETE':
-            catalog.delete()
+            var.delete()
             return HttpResponse(status=204)
     else:
         return HttpResponse(status=204)
 
+
+@csrf_exempt
+def request_list(request, scope, scope_id):
+    """
+    List all code catalogs, or create a new catalog.
+    """
+    scope_list = ['templates', 'cases']
+    if scope in scope_list:
+        scope = scope[0:-1].capitalize()
+        try:
+            catalog = Catalog.objects.all().get(pk=scope_id)
+        except Catalog.DoesNotExist:
+            return HttpResponse(status=404)
+
+        if request.method == 'GET':
+            requests = RequestOperation.objects.all().filter(catalog__id=scope_id)
+            serializer = RequestSerializer(requests, many=True)
+            return JSONResponse(serializer.data)
+
+        elif request.method == 'POST':
+            data = JSONParser().parse(request)
+            data["catalog"] = scope_id
+            if scope == 'Template':
+                data["is_template"] = 1
+            else:
+                data["is_template"] = 0
+            serializer = RequestSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return JSONResponse(serializer.data, status=200)
+            return JSONResponse(serializer.errors, status=400)
+    else:
+        return HttpResponse(status=404)
+
+
+@csrf_exempt
+def request_detail(request, scope, scope_id, request_id):
+    """
+    Retrieve, update or delete a code catalog.
+    """
+    scope_list = ['templates', 'cases']
+    if scope in scope_list:
+        scope = scope[0:-1].capitalize()
+        try:
+            requests = RequestOperation.objects.all().filter(catalog__id=scope_id,pk=request_id)
+            if len(requests) > 0:
+                req = requests[0]
+            else:
+                return HttpResponse(status=404)
+        except RequestOperation.DoesNotExist:
+            return HttpResponse(status=404)
+
+        if request.method == 'GET':
+            serializer = RequestOperation(req)
+            return JSONResponse(serializer.data)
+
+        elif request.method == 'PUT':
+            data = JSONParser().parse(request)
+            serializer = VariableSerializer(req, data=data,partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return JSONResponse(serializer.data)
+            return JSONResponse(serializer.errors, status=400)
+
+        elif request.method == 'DELETE':
+            req.delete()
+            return HttpResponse(status=204)
+    else:
+        return HttpResponse(status=204)
 
 @csrf_exempt
 def project_list(request):
