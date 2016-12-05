@@ -38,7 +38,7 @@ catalog:
         method: post
         params:
             scope in_path required string  in ['projects', 'modules', 'templates', 'chunks', 'cases']
-            parent_id in_body required string no_limit
+            parent_id in_body required string no_limit  (not for project)
             name in_body required string 5<len<50
             desc in_body required string 5<len<1024
             priority in_boy required int >=0
