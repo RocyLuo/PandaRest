@@ -26,4 +26,5 @@ urlpatterns = [
 
     url(r'^(?P<scope>[a-z]+)$', views.catalog_list),
     url(r'^(?P<scope>[a-z]+)/(?P<pk>[0-9]+)$', views.catalog_detail),
+    url(r'^(?P<scope>[a-z]+)/(?P<pk>[0-9]+)/(?P<subscope>[a-z]+)$', views.catalog_subctalog),
 ]

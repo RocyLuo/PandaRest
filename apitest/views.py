@@ -81,6 +81,23 @@ def catalog_detail(request, scope, pk):
     else:
         return HttpResponse(status=400)
 
+
+@csrf_exempt
+def catalog_subctalog(request, scope, pk, subscope):
+    """
+    Retrieve, update or delete a code catalog.
+    """
+    scope_list = ['projects', 'modules', 'templates', 'cases']
+    if scope in scope_list:
+        scope = scope[0:-1].capitalize()
+        subscope = subscope[0:-1].capitalize()
+        if request.method == 'GET':
+            catalogs = Catalog.objects.all().filter(parent__id=pk,type=subscope).order_by('priority')
+            serializer = CatalogSerializer(catalogs, many=True)
+            return JSONResponse(serializer.data)
+    else:
+        return HttpResponse(status=400)
+
 @csrf_exempt
 def var_list(request, scope, scope_id):
     """

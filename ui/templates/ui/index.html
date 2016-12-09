@@ -4,10 +4,30 @@
     <meta charset="UTF-8">
     <title>ApiTestFramework</title>
     {% load static %}
+    <script src="{% static 'ui/js/angular.min.js' %}"></script>
+    <script src="{% static 'ui/js/app.js' %}"></script>
+    <script src="{% static 'ui/js/phone-list.component.js' %}"></script>
 </head>
 <body>
+
 <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+
 <h1>Welcome to world</h1>
-<script src="{% static 'ui/js/load_projects.js' %}"></script>
+{% verbatim %}
+<div ng-app="phonecatApp">
+ 	<p>名字 : <input type="text" ng-model="name"></p>
+ 	<h1>Hello {{name}}</h1>
+    <phone-list></phone-list>
+</div>
+{% endverbatim %}
+
+<div id ="projectList">
+
+</div>
+<script src="{% static 'ui/js/http_base.js' %}"></script>
+<script>
+getProjects();
+</script>
+
 </body>
 </html>
