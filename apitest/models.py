@@ -49,7 +49,7 @@ class RequestOperation(models.Model):
     desc = models.TextField(default="")
     is_template = models.SmallIntegerField(default=0)
     method = models.CharField(max_length=10,choices=METHOD_CHOICES)
-    url = models.URLField(max_length=300)
+    url = models.CharField(max_length=300)
     header = models.CharField(max_length=500,blank=True, null=True)
     params = models.CharField(max_length=300,blank=True, null=True)
     body = models.TextField(blank=True, null=True)

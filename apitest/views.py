@@ -214,12 +214,12 @@ def request_detail(request, scope, scope_id, request_id):
             return HttpResponse(status=404)
 
         if request.method == 'GET':
-            serializer = RequestOperation(req)
+            serializer = RequestSerializer(req)
             return JSONResponse(serializer.data)
 
         elif request.method == 'PUT':
             data = JSONParser().parse(request)
-            serializer = VariableSerializer(req, data=data,partial=True)
+            serializer = RequestSerializer(req, data=data,partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return JSONResponse(serializer.data)

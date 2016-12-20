@@ -2,18 +2,321 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Project</title>
+    <title>ApiTestFramework</title>
     {% load static %}
-    <script src="{% static 'ui/js/angular.min.js' %}"></script>
-    <script src="{% static 'ui/js/app.js' %}"></script>
-    <script src="{% static 'ui/js/components.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'ui/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'ui/css/base.css' %}">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="http://jqueryui.com/resources/demos/style.css">
+    <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+    <script src="{% static 'ui/bootstrap/js/bootstrap.js' %}"></script>
+
 </head>
 <body>
-<h1>Project/Modules</h1>
-{% verbatim %}
-<div ng-app="myApp">
-    <nav-tree></nav-tree>
+<div class="row">
+  <div class="col-md-3">
+      <ul class="module-tree">
+
+        </ul>
+  </div>
+  <div class="col-md-9">
+      <div class="form panel panel-default " style="display: none;" >
+          <div class="panel-heading">
+              <form class="form-inline" role="form">
+                  <div class="form-group">
+                    <select id="method" class="form-control">
+                        <option value="get" selected="selected" >GET</option>
+                        <option value="post">POST</option>
+                        <option value="put">PUT</option>
+                        <option value="delete">DELETE</option>
+                    </select>
+                  </div>
+              <div class="form-group">
+                <input type="text" class="form-control" id="url">
+              </div>
+                  <div class="form-group">
+                <div class="input-group">
+                  <div class="input-group-addon">Status Code</div>
+                  <input id="expect_status" class="form-control" type="text">
+                </div>
+              </div>
+              <button id="save" type="button" class="btn btn-primary">Save</button>
+                  <button id="delete" type="button" class="btn btn-danger">Delete</button>
+              </form>
+          </div>
+
+          <div class="panel-body">
+              <ul class="nav nav-tabs" role="tablist">
+                  <li role="presentation" name="headers" class="active"><a href="#">Headers</a></li>
+                  <li role="presentation" name="parameters"><a href="#">Parameters</a></li>
+                  <li role="presentation" name="body"><a href="#">Body</a></li>
+                  <li role="presentation" name="validation"><a href="#">Validation</a></li>
+                  <li role="presentation" name="extractor"><a href="#">Variable Extractor</a></li>
+                  <li role="presentation" name="repeat"><a href="#">Repeat</a></li>
+              </ul>
+              <table id="headers" class="table table-hover request-block">
+                <tr>
+                    <td><input type="text" name="key" class="form-control" placeholder="key"></td>
+                    <td><input type="text" name="value" class="form-control" placeholder="value"></td>
+                </tr>
+              </table>
+              <table id="parameters" style="display: none;" class="table table-hover request-block">
+                <tr>
+                    <td><input type="text" name="key" class="form-control" placeholder="key"></td>
+                    <td><input type="text" name="value" class="form-control" placeholder="value"></td>
+                </tr>
+              </table>
+              <div class="form-group">
+                <textarea id="body" style="display: none;"  class="form-control request-block" rows="8"></textarea>
+              </div>
+
+              <div class="form-group">
+                <textarea id="validation" style="display: none;"  class="form-control request-block" rows="8"></textarea>
+              </div>
+              <table id="extractor" style="display: none;" class="table table-hover request-block">
+                <tr>
+                    <td><input type="text" name="key" class="form-control" placeholder="variable name" ></td>
+                    <td><input type="text" name="value" class="form-control" placeholder="variable path"></td>
+                </tr>
+              </table>
+              <form id="repeat" style="display: none;" class="request-block form-inline" role="form">
+                    <div class="form-group">
+                        <div class="input-group">
+                          <div class="input-group-addon">Timeout</div>
+                          <input id="wait_timeout" class="form-control" type="text" value="0">
+                        </div>
+                      </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                          <div class="input-group-addon">Period</div>
+                          <input id="wait_period" class="form-control" type="text" value="0">
+                        </div>
+                      </div>
+              </form>
+          </div>
+      </div>
+  </div>
 </div>
-{% endverbatim %}
+
+<div id="dialog-form" title="New Catalog">
+  <form role="form">
+    <div class="form-group">
+        <label for="catalog_name">Name</label>
+        <input type="text" class="form-control" id="catalog_name">
+    </div>
+      <div class="form-group">
+          <label for="catalog_desc">Description</label>
+        <input type="text" class="form-control" id="catalog_desc">
+    </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+
+  </form>
+</div>
+
+
+
+
+<script type="text/javascript">
+var CURRENT_REQUEST_ID = "";
+var CURRENT_CASE_ID = "";
+
+function getCaseOperations(caseId){
+    $.getJSON( "/apis/cases/"+caseId+"/requests", function (data){
+        $.each(data, function(){
+            var object = this;
+            var items = [];
+            items.push( '<li class="case-item"> <div class="item-heading" name="operation" id="'+caseId+'-'+object["id"]+'">'+object["name"]+'</div></li>' );
+
+            var ul = '<ul class="operation-tree">'+items.join( "" )+'</ul>'
+
+            $("#"+caseId).parent().append(ul);
+        });
+    });
+}
+
+function getOperation(scopeId,operationId){
+    CURRENT_REQUEST_ID = operationId;
+    CURRENT_CASE_ID = scopeId;
+    $.getJSON( "/apis/cases/"+scopeId+"/requests/"+operationId, function (data){
+
+        $("#method").children().removeAttr("selected");
+        $("#method option[value='"+data.method+"']").attr("selected","selected");
+
+        $("#expect_status").attr("value",data.expect_status);
+        $("#url").attr("value",data.url);
+        $("#headers").html("");
+        if (data.header!=""){
+            var headerJSON =JSON.parse(data.header);
+            $.each(headerJSON, function(name, value){
+                var items = [];
+                items.push('<td><input type="text" name="key" class="form-control" value="'+name+'"></td>');
+                items.push('<td><input type="text" name="value"class="form-control" value="'+value+'"></td>');
+                var tr = '<tr">'+items.join( "" )+'</tr>';
+                $("#headers").append(tr);
+            });
+         }
+
+         $("#parameters").html("");
+         if (data.params!=""){
+            var paramJSON =JSON.parse(data.params);
+            $.each(paramJSON, function(name, value){
+                var items = [];
+                items.push('<td><input type="text" name="key" class="form-control" value="'+name+'"></td>');
+                items.push('<td><input type="text" name="value" class="form-control" value="'+value+'"></td>');
+                var tr = '<tr">'+items.join( "" )+'</tr>';
+                $("#parameters").append(tr);
+            });
+         }
+        $("#body").text(data.body);
+        $("#validation").text(data.test_code);
+        $("#wait_timeout").attr("value",data.wait_timeout);
+        $("#wait_period").attr("value",data.wait_timeout);
+        $("div.panel-default").show();
+    });
+}
+
+function getModuleCases(moduleId){
+    $.getJSON( "/apis/modules/"+moduleId+"/cases", function (data){
+        $.each(data, function(){
+            var object = this;
+            var items = [];
+            items.push( '<li class="case-item"> <div class="item-heading" name="case" id="'+object["id"]+'">'+object["name"]+' </div><span name="case" id="'+object["id"]+'" class="glyphicon glyphicon-plus"></span></li>' );
+
+            var ul = '<ul class="case-tree">'+items.join( "" )+'</ul>'
+
+            $("#"+moduleId).parent().append(ul);
+        });
+    });
+}
+
+function getProjectModules(projectId){
+    $.getJSON( "/apis/projects/"+projectId+"/modules", function (data){
+        $.each(data, function(){
+            var object = this;
+            var items = [];
+            var module_id = object["id"];
+            items.push( '<li class="module-item"> <div class="item-heading" name="module" id="'+object["id"]+'">'+object["name"]+' </div><span name="module" id="'+object["id"]+'" class="glyphicon glyphicon-plus"></span></li>' );
+            $("ul.module-tree").append(items.join( "" ));
+        });
+    });
+}
+
+function deleteRequest(scopeId,requestId){
+
+    $.ajax({
+       url: '/apis/cases/'+scopeId+'/requests/'+requestId,
+       type: 'DELETE',
+       success: function(data){
+                            alert("ok");
+                        },
+                        error: function(data){
+                            alert("not ok");
+                        }
+    });
+}
+
+function saveRequest(scopeId,requestId,body){
+
+    $.ajax({
+       url: '/apis/cases/'+scopeId+'/requests/'+requestId,
+       type: 'PUT',
+       contentType: "application/json; charset=utf-8",
+       data:JSON.stringify(body),
+       dataType:"json",
+       success: function(data){
+                            alert("ok");
+                        },
+                        error: function(data){
+                            alert("not ok");
+                        }
+    });
+}
+
+function getDataFromTable(tableId){
+    var dict = {};
+    alert($("#"+tableId).children().length);
+    $.each($("#"+tableId).find("tr"), function(){
+        var key = $(this).find("input[name='key']").val();
+        var value = $(this).find("input[name='value']").val();
+        dict[key] = value;
+        alert(dict[key]);
+    });
+    return JSON.stringify(dict);
+}
+
+getProjectModules({{project_id}});
+
+$(document).ready(function(){
+
+    $( "#dialog-form" ).dialog({
+      autoOpen: false,
+    });
+
+  $(".module-tree").on("click",".item-heading",function(){
+      var children = $(this).nextAll("ul");
+      var catalog_id = $(this).attr("id");
+      var name = $(this).attr("name");
+      if (children.length==0){
+        if(name=="module"){
+            getModuleCases(catalog_id);
+        }
+        else if(name=="case"){
+            getCaseOperations(catalog_id);
+        }
+        else {
+            var caseId = catalog_id.split("-")[0];
+            var operationId = catalog_id.split("-")[1];
+            getOperation(caseId,operationId);
+        }
+      }
+      if (name!="operation"){
+        $(this).nextAll("ul").toggle();
+      }
+  });
+
+  $(".nav-tabs").on("click","li",function(){
+        $(this).siblings().removeClass("active");
+        $(this).attr("class","active");
+        var name = $(this).attr("name");
+        $(".request-block").hide();
+        $("#"+name).show();
+
+  });
+
+  $("div.form").on("click","#save",function(){
+        $.valHooks.textarea = {
+          get: function( elem ) {
+            return elem.value.replace( /\r?\n/g, "\r\n" );
+          }
+        };
+       var data={};
+       data["method"] = $("#method").val();
+       data["url"] = $("#url").val();
+       data["header"] = getDataFromTable("headers");
+       data["params"] = getDataFromTable("parameters");
+       alert(data["header"]);
+       data["body"] = $("#body").val();
+       data["expect_status"] = parseInt($("#expect_status").val());
+       data["test_code"] = $("#validation").val();
+       data["wait_timeout"] = parseInt($("#wait_timeout").val());
+       data["wait_period"] = parseInt($("#wait_period").val());
+       data["drive_data"] = "";
+       saveRequest(CURRENT_CASE_ID,CURRENT_REQUEST_ID,data);
+
+  });
+
+  $("#delete").click(function(){
+    deleteRequest(CURRENT_CASE_ID,CURRENT_REQUEST_ID);
+  });
+
+  $(".module-tree").on("click","span.glyphicon",function(){
+        $("#dialog-form" ).dialog( "open" );
+  });
+
+
+});
+
+</script>
 </body>
 </html>

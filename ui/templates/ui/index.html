@@ -4,17 +4,36 @@
     <meta charset="UTF-8">
     <title>ApiTestFramework</title>
     {% load static %}
-    <script src="{% static 'ui/js/angular.min.js' %}"></script>
-    <script src="{% static 'ui/js/app.js' %}"></script>
-    <script src="{% static 'ui/js/components.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'ui/bootstrap/css/bootstrap.min.css' %}">
+
+    <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+    <script src="{% static 'ui/bootstrap/js/bootstrap.js' %}"></script>
+
 </head>
 <body>
-<h1>Welcome to world</h1>
-{% verbatim %}
-<div ng-app="myApp">
-    <project-list></project-list>
+<div class="row">
+
+    <div class="col-md-4">
+
+    </div>
+
+  <div class="col-md-8">
+      {% for project in projects %}
+        <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading"><a href="/projects/{{project.id}}">{{project.name}}</a></div>
+              <div class="panel-body">
+                  <p>Total Cases: 100</p>
+                  <p>Last Test Result: Fail</p>
+                  <p>Pass:10</p>
+              </div>
+            </div>
+        </div>
+      {% endfor %}
+  </div>
+
 </div>
-{% endverbatim %}
+
 
 </body>
 </html>
