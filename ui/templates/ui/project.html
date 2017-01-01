@@ -11,110 +11,298 @@
     <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
     <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
     <script src="{% static 'ui/bootstrap/js/bootstrap.js' %}"></script>
+    <script src="{% static 'ui/js/angular.min.js' %}"></script>
 
 </head>
-<body>
+<body ng-app="myApp">
 <div class="row">
-  <div class="col-md-3">
-      <ul class="module-tree">
+    <div class="col-md-3">
+        <ul class="module-tree">
 
         </ul>
-  </div>
-  <div class="col-md-9">
-      <div class="form panel panel-default " style="display: none;" >
-          <div class="panel-heading">
-              <form class="form-inline" role="form">
-                  <div class="form-group">
-                    <select id="method" class="form-control">
-                        <option value="get" selected="selected" >GET</option>
-                        <option value="post">POST</option>
-                        <option value="put">PUT</option>
-                        <option value="delete">DELETE</option>
-                    </select>
-                  </div>
-              <div class="form-group">
-                <input type="text" class="form-control" id="url">
-              </div>
-                  <div class="form-group">
-                <div class="input-group">
-                  <div class="input-group-addon">Status Code</div>
-                  <input id="expect_status" class="form-control" type="text">
+    </div>
+    <div class="col-md-9">
+        <div class="form panel panel-default " style="display: none;">
+            <div class="panel-heading">
+                <form class="form-inline" role="form">
+                    <div class="form-group">
+                        <select id="method" class="form-control">
+                            <option value="get" selected="selected">GET</option>
+                            <option value="post">POST</option>
+                            <option value="put">PUT</option>
+                            <option value="delete">DELETE</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="url">
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">Status Code</div>
+                            <input id="expect_status" class="form-control" type="text">
+                        </div>
+                    </div>
+                    <button id="save" type="button" class="btn btn-primary">Save</button>
+                    <button id="delete" type="button" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+
+            <div class="panel-body">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" name="headers" class="active"><a href="#">Headers</a></li>
+                    <li role="presentation" name="parameters"><a href="#">Parameters</a></li>
+                    <li role="presentation" name="body"><a href="#">Body</a></li>
+                    <li role="presentation" name="validation"><a href="#">Validation</a></li>
+                    <li role="presentation" name="extractor"><a href="#">Variable Extractor</a></li>
+                    <li role="presentation" name="repeat"><a href="#">Repeat</a></li>
+                </ul>
+                <table id="headers" class="table table-hover request-block">
+                    <tr>
+                        <td><input type="text" name="key" class="form-control" placeholder="key"></td>
+                        <td><input type="text" name="value" class="form-control" placeholder="value"></td>
+                    </tr>
+                </table>
+                <table id="parameters" style="display: none;" class="table table-hover request-block">
+                    <tr>
+                        <td><input type="text" name="key" class="form-control" placeholder="key"></td>
+                        <td><input type="text" name="value" class="form-control" placeholder="value"></td>
+                    </tr>
+                </table>
+                <div class="form-group">
+                    <textarea id="body" style="display: none;" class="form-control request-block" rows="8"></textarea>
                 </div>
-              </div>
-              <button id="save" type="button" class="btn btn-primary">Save</button>
-                  <button id="delete" type="button" class="btn btn-danger">Delete</button>
-              </form>
-          </div>
 
-          <div class="panel-body">
-              <ul class="nav nav-tabs" role="tablist">
-                  <li role="presentation" name="headers" class="active"><a href="#">Headers</a></li>
-                  <li role="presentation" name="parameters"><a href="#">Parameters</a></li>
-                  <li role="presentation" name="body"><a href="#">Body</a></li>
-                  <li role="presentation" name="validation"><a href="#">Validation</a></li>
-                  <li role="presentation" name="extractor"><a href="#">Variable Extractor</a></li>
-                  <li role="presentation" name="repeat"><a href="#">Repeat</a></li>
-              </ul>
-              <table id="headers" class="table table-hover request-block">
-                <tr>
-                    <td><input type="text" name="key" class="form-control" placeholder="key"></td>
-                    <td><input type="text" name="value" class="form-control" placeholder="value"></td>
-                </tr>
-              </table>
-              <table id="parameters" style="display: none;" class="table table-hover request-block">
-                <tr>
-                    <td><input type="text" name="key" class="form-control" placeholder="key"></td>
-                    <td><input type="text" name="value" class="form-control" placeholder="value"></td>
-                </tr>
-              </table>
-              <div class="form-group">
-                <textarea id="body" style="display: none;"  class="form-control request-block" rows="8"></textarea>
-              </div>
-
-              <div class="form-group">
-                <textarea id="validation" style="display: none;"  class="form-control request-block" rows="8"></textarea>
-              </div>
-              <table id="extractor" style="display: none;" class="table table-hover request-block">
-                <tr>
-                    <td><input type="text" name="key" class="form-control" placeholder="variable name" ></td>
-                    <td><input type="text" name="value" class="form-control" placeholder="variable path"></td>
-                </tr>
-              </table>
-              <form id="repeat" style="display: none;" class="request-block form-inline" role="form">
+                <div class="form-group">
+                    <textarea id="validation" style="display: none;" class="form-control request-block"
+                              rows="8"></textarea>
+                </div>
+                <table id="extractor" style="display: none;" class="table table-hover request-block">
+                    <tr>
+                        <td><input type="text" name="key" class="form-control" placeholder="variable name"></td>
+                        <td><input type="text" name="value" class="form-control" placeholder="variable path"></td>
+                    </tr>
+                </table>
+                <form id="repeat" style="display: none;" class="request-block form-inline" role="form">
                     <div class="form-group">
                         <div class="input-group">
-                          <div class="input-group-addon">Timeout</div>
-                          <input id="wait_timeout" class="form-control" type="text" value="0">
+                            <div class="input-group-addon">Timeout</div>
+                            <input id="wait_timeout" class="form-control" type="text" value="0">
                         </div>
-                      </div>
+                    </div>
                     <div class="form-group">
                         <div class="input-group">
-                          <div class="input-group-addon">Period</div>
-                          <input id="wait_period" class="form-control" type="text" value="0">
+                            <div class="input-group-addon">Period</div>
+                            <input id="wait_period" class="form-control" type="text" value="0">
                         </div>
-                      </div>
-              </form>
-          </div>
-      </div>
-  </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div id="dialog-form" title="New Catalog">
-  <form role="form">
-    <div class="form-group">
-        <label for="catalog_name">Name</label>
-        <input type="text" class="form-control" id="catalog_name">
+<div class="row">
+    <div class="col-md-3" ng-controller="treeData">
+        {% verbatim %}
+        <div class="tree">
+            <ul>
+                <li ng-repeat="module in vm.navData" ng-class="{closed:vm.tree.isFolded(module)}">
+                    <div>
+                      <span ng-click="vm.tree.toggleModuleFold(module)">
+                        <span class="glyphicon"
+                              ng-class="vm.tree.isFolded(module)?'glyphicon-plus':'glyphicon-minus'"></span>
+                        {{module.name}}
+                      </span>
+                      <span ng-click="vm.tree.updateItem(module)">
+                            edit
+                      </span>
+                      <span ng-click="vm.tree.deleteItem(module)">
+                            delete
+                      </span>
+                    </div>
+                    <ul ng-class="{hidden: vm.tree.isFolded(module)}">
+                        <li ng-repeat="case in module.items">
+                            <span>
+                              {{case.name}}
+                            </span>
+                            <span ng-click="vm.tree.updateItem(case)">
+                                edit
+                              </span>
+                              <span ng-click="vm.tree.deleteItem(case)">
+                                  delete
+                              </span>
+                        </li>
+                        <li ng-click="vm.tree.addItem(module)">
+                            <label>Add Case</label>
+                        </li>
+                    </ul>
+                </li>
+                <li ng-click="vm.tree.addParent()">
+                    <label>Add Module</label>
+                </li>
+            </ul>
+        </div>
+        {% endverbatim %}
     </div>
-      <div class="form-group">
-          <label for="catalog_desc">Description</label>
-        <input type="text" class="form-control" id="catalog_desc">
-    </div>
-        <button type="submit" class="btn btn-primary">Save</button>
+    <div class="col-md-9" >
 
-  </form>
+    </div>
 </div>
 
 
+<script>
+
+var app = angular.module('myApp', []);
+app.factory('TreeData', function($q, $http) {
+
+  function TreeData(cbIsSame) {
+    var _this = this;
+    this.tree = [];
+    this.isSame = cbIsSame || function(item1, item2) { return item1 === item2 };
+    /**
+     * 折叠/展开
+     * @param item {Object}
+     * @param folded
+     * @private
+     */
+    this._fold = function(item, folded) {
+      item.folded = folded;
+    };
+    /**
+     * 折叠指定的节点
+     * @param item {Object}
+     */
+    this.fold = function(item) {
+      this._fold(item, true);
+    };
+    /**
+     * 展开指定的节点
+     * @param item {Object}
+     */
+    this.unfold = function(item) {
+      this._fold(item, false);
+    };
+    /**
+     * 切换节点的折叠状态
+     * @param item {Object}
+     */
+    this.toggleFold = function(item) {
+      this._fold(item, !item.folded);
+    };
+
+    /**
+     * 检查指定节点的折叠状态
+     * @param item {Object}
+     * @returns {boolean}
+     */
+    this.isFolded = function(item) {
+      return !item.folded;
+    };
+
+    /**
+     * 添加子节点
+     * @param parent {Object}
+     * @param item {Object}
+     */
+    this.addItem = function(parent){
+      parent.items.push({name:"Child"});
+    };
+
+    /**
+     * 添加父节点
+     */
+    this.addParent = function(){
+      var myData={};
+      myData["parent"] = {{project_id}};
+      myData["name"] = "ParentTest1";
+      myData["desc"] = "test123";
+      myData["repeat"] = 0;
+      myData["priority"] = 1;
+
+      $http({
+            method: 'POST',
+            url: "/apis/modules",
+            data: myData
+            }).
+        then(function(response) {
+            _this.tree.push(response.data);
+        });
+    };
+
+    /**
+     * 更新节点
+     * @param item {Object}
+     */
+    this.updateItem = function(item){
+        $http.get("/apis/projects/{{project_id}}/modules").
+        then(function(response) {
+            alert("ffffff");
+        });
+    };
+
+    /**
+     * 删除节点
+     * @param item {Object}
+     */
+    this.deleteItem = function(item){
+        $http.delete("/apis/modules/"+item.id).
+        then(function(response) {
+            alert("ffffff");
+        });
+    };
+
+    /**
+     * 获得module全部节点
+     * @returns items []
+     */
+    this.init = function(){
+        var d = $q.defer();
+        $http.get("/apis/projects/{{project_id}}/modules").
+        then(function success(response) {
+            _this.tree = response.data;
+            d.resolve(response.data);
+        });
+        return d.promise;
+    };
+
+
+    /**
+     * 切换module节点的折叠状态
+     * @param item {Object}
+     */
+    this.toggleModuleFold = function(item) {
+      this._fold(item, !item.folded);
+      $http.get("/apis/modules/"+item.id+"/cases").
+        then(function(response) {
+            item["items"] = response.data;
+        });
+    };
+
+  }
+  return TreeData;
+});
+
+app.controller('treeData', function ($scope, $http, TreeData) {
+  var vm = $scope.vm = {};
+  vm.tree = new TreeData();
+  vm.tree.init().then(function(ret){
+    vm.navData = ret;
+  });
+});
+
+app.factory('OperationData', function($q, $http) {
+
+}
+
+app.controller('operations', function ($scope, $http, OperationData) {
+  var vm = $scope.operation = {};
+  vm.operations = new OperationData();
+  vm.operations.init().then(function(ret){
+    vm.navData = ret;
+  });
+});
+
+</script>
 
 
 <script type="text/javascript">
@@ -316,6 +504,9 @@ $(document).ready(function(){
 
 
 });
+
+
+
 
 </script>
 </body>

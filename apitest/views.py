@@ -31,7 +31,6 @@ def catalog_list(request, scope):
             return JSONResponse(serializer.data)
 
         elif request.method == 'POST':
-            print str(request.body)
             data = JSONParser().parse(request)
             data["type"] = scope
             data["status"] = 0
