@@ -12,7 +12,7 @@
     <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
     <script src="{% static 'ui/bootstrap/js/bootstrap.js' %}"></script>
     <script src="{% static 'ui/js/angular.min.js' %}"></script>
-
+    <script src="{% static 'ui/popups/dist/angular-popups.js %}"></script>
 </head>
 <body ng-app="myApp">
 <div class="row">
@@ -145,14 +145,18 @@
         {% endverbatim %}
     </div>
     <div class="col-md-9" >
-
+<button ng-click="dialog={open: true}">打开对话框</button>
+<dialog ng-if="dialog.open" close="dialog.open=false">
+    <div dialog-title>消息</div>
+    <div dialog-content>hello world</div>
+</dialog>
     </div>
 </div>
 
 
 <script>
 
-var app = angular.module('myApp', []);
+var app = angular.module('myApp', ['angular-popups']);
 app.factory('TreeData', function($q, $http) {
 
   function TreeData(cbIsSame) {
