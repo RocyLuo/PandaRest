@@ -6,13 +6,16 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'ui/bootstrap/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'ui/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'ui/ngDialog/css/ngDialog.min.css' %}">
+    <link rel="stylesheet" href="{% static 'ui/ngDialog/css/ngDialog-theme-default.min.css' %}">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
     <link rel="stylesheet" href="http://jqueryui.com/resources/demos/style.css">
     <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
     <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
     <script src="{% static 'ui/bootstrap/js/bootstrap.js' %}"></script>
     <script src="{% static 'ui/js/angular.min.js' %}"></script>
-    <script src="{% static 'ui/popups/dist/angular-popups.js %}"></script>
+    <script src="{% static 'ui/popups/dist/angular-popups.js' %}"></script>
+    <script src="{% static 'ui/ngDialog/js/ngDialog.min.js' %}"></script>
 </head>
 <body ng-app="myApp">
 <div class="row">
@@ -113,51 +116,217 @@
                               ng-class="vm.tree.isFolded(module)?'glyphicon-plus':'glyphicon-minus'"></span>
                         {{module.name}}
                       </span>
-                      <span ng-click="vm.tree.updateItem(module)">
+                      <span ng-click="openModuleEditor(module)">
                             edit
                       </span>
-                      <span ng-click="vm.tree.deleteItem(module)">
+                      <span ng-click="deleteModule(module)">
                             delete
                       </span>
                     </div>
                     <ul ng-class="{hidden: vm.tree.isFolded(module)}">
                         <li ng-repeat="case in module.items">
-                            <span>
+                            <span ng-click="getOperations(case)">
                               {{case.name}}
                             </span>
-                            <span ng-click="vm.tree.updateItem(case)">
+                            <span ng-click="openCaseEditor(module, case)">
                                 edit
                               </span>
-                              <span ng-click="vm.tree.deleteItem(case)">
+                              <span ng-click="deleteCase(case)">
                                   delete
                               </span>
                         </li>
-                        <li ng-click="vm.tree.addItem(module)">
+                        <li ng-click="openCaseEditor(module)">
                             <label>Add Case</label>
                         </li>
                     </ul>
                 </li>
-                <li ng-click="vm.tree.addParent()">
+                {% endverbatim %}
+                <li ng-click="openModuleEditor()">
                     <label>Add Module</label>
                 </li>
+                <script type="text/ng-template" id="moduleEditor">
+                    <div ng-show="!saveFlag" class="dialog-title">Add Module</div>
+                    <div ng-show="saveFlag" class="dialog-title">Update Module</div>
+                    <div class="dialog-contents">
+                        <input id="module_id" type="text" ng-model="currentModule.id" hidden="true">
+                        <div class="form-group">
+                            <label for="module_name">Name</label>
+                            <input id="module_name" type="text" ng-model="currentModule.name" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="module_desc">Description</label>
+                            <textarea id="module_desc" ng-model="currentModule.desc" class="form-control"
+                                      rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="module_repeat">Repeat</label>
+                            <input id="module_repeat" type="text" ng-model="currentModule.repeat" class="form-control">
+                        </div>
+                        <button ng-show="!saveFlag" ng-click="addModule(currentModule);closeThisDialog()"
+                                class="btn btn-primary">Save
+                        </button>
+                        <button ng-show="saveFlag" ng-click="updateModule(currentModule);closeThisDialog()"
+                                class="btn btn-primary">Update
+                        </button>
+                    </div>
+                </script>
+
+                <script type="text/ng-template" id="caseEditor">
+                    <div ng-show="!saveFlag" class="dialog-title">Add Case</div>
+                    <div ng-show="saveFlag" class="dialog-title">Update Case</div>
+                    <div class="dialog-contents">
+                        <input type="text" ng-model="currentParentModule.id" hidden="true">
+                        <input id="case_id" type="text" ng-model="currentCase.id" hidden="true">
+                        <div class="form-group">
+                            <label for="case_name">Name</label>
+                            <input id="case_name" type="text" ng-model="currentCase.name" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="case_desc">Description</label>
+                            <textarea id="case_desc" ng-model="currentCase.desc" class="form-control"
+                                      rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="case_repeat">Repeat</label>
+                            <input id="case_repeat" type="text" ng-model="currentCase.repeat" class="form-control">
+                        </div>
+                        <button ng-show="!saveFlag"
+                                ng-click="addCase(currentParentModule,currentCase);closeThisDialog()"
+                                class="btn btn-primary">Save
+                        </button>
+                        <button ng-show="saveFlag"
+                                ng-click="updateCase(currentParentModule,currentCase);closeThisDialog()"
+                                class="btn btn-primary">Update
+                        </button>
+                    </div>
+                </script>
+
             </ul>
         </div>
-        {% endverbatim %}
     </div>
-    <div class="col-md-9" >
-<button ng-click="dialog={open: true}">打开对话框</button>
-<dialog ng-if="dialog.open" close="dialog.open=false">
-    <div dialog-title>消息</div>
-    <div dialog-content>hello world</div>
-</dialog>
+    {% verbatim %}
+    <div class="col-md-9" ng-controller="operationCtrl">
+        <div class="list-group">
+            <div class="form panel panel-default" ng-repeat="operation in operations">
+                <div class="panel-heading" ng-click="showFlag=!showFlag">
+                    Name:{{operation.name}}
+                </div>
+
+                <div class="panel-body" ng-show="showFlag">
+                    <form class="form-inline" role="form">
+                        <div class="form-group">
+                            <select class="form-control" ng-model="operation.method">
+                                <option value="get" selected="selected">GET</option>
+                                <option value="post">POST</option>
+                                <option value="put">PUT</option>
+                                <option value="delete">DELETE</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" ng-model="operation.url">
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-addon">Status Code</div>
+                                <input class="form-control" ng-model="operation.expect_status" type="text">
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-danger">Delete</button>
+                    </form>
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" name="headers" ng-click="switchVar='headers'"
+                            ng-class="{'active':switchVar=='headers'}"><a href="#">Headers</a></li>
+                        <li role="presentation" name="parameters" ng-click="switchVar='parameters'"
+                            ng-class="{'active':switchVar=='parameters'}"><a href="#">Parameters</a></li>
+                        <li role="presentation" name="body" ng-click="switchVar='body'"
+                            ng-class="{'active':switchVar=='body'}"><a href="#">Body</a></li>
+                        <li role="presentation" name="validation" ng-click="switchVar='validation'"
+                            ng-class="{'active':switchVar=='validation'}"><a href="#">Validation</a></li>
+                        <li role="presentation" name="expectedBody" ng-click="switchVar='expectedBody'"
+                            ng-class="{'active':switchVar=='expectedBody'}"><a href="#">Expected Body</a></li>
+                        <li role="presentation" name="extractor" ng-click="switchVar='extractor'"
+                            ng-class="{'active':switchVar=='extractor'}"><a href="#">Variable Extractor</a></li>
+                        <li role="presentation" name="repeat" ng-click="switchVar='repeat'"
+                            ng-class="{'active':switchVar=='repeat'}"><a href="#">Repeat</a></li>
+                    </ul>
+                    <div ng-switch="switchVar">
+                        <div ng-switch-default>
+                            <table class="table table-hover request-block">
+                                <tr>
+                                    <td><input type="text" name="key" class="form-control" placeholder="key"></td>
+                                    <td><input type="text" name="value" class="form-control" placeholder="value"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div ng-switch-when="Parameters">
+                            <table class="table table-hover request-block">
+                                <tr>
+                                    <td><input type="text" name="key" class="form-control" placeholder="key"></td>
+                                    <td><input type="text" name="value" class="form-control" placeholder="value"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div ng-switch-when="body">
+                            <div class="form-group">
+                                <textarea class="form-control request-block" ng-model="operation.body" rows="8"></textarea>
+                            </div>
+                        </div>
+                        <div ng-switch-when="validation">
+                            <div class="form-group">
+                    <textarea class="form-control request-block" ng-model="operation.test_code"
+                              rows="8"></textarea>
+                            </div>
+                        </div>
+                        <div ng-switch-when="expectedBody">
+                            <div class="form-group">
+                                <textarea class="form-control request-block" rows="8"></textarea>
+                            </div>
+                        </div>
+                        <div ng-switch-when="extractor">
+                            <table class="table table-hover request-block">
+                                <tr>
+                                    <td><input type="text" name="key" class="form-control" placeholder="variable name">
+                                    </td>
+                                    <td><input type="text" name="value" class="form-control"
+                                               placeholder="variable path"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div ng-switch-when="repeat">
+                            <form class="request-block form-inline" role="form">
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <div class="input-group-addon">Timeout</div>
+                                        <input class="form-control"ng-model="operation.wait_timeout" type="text" value="0">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <div class="input-group-addon">Period</div>
+                                        <input class="form-control" ng-model="operation.wait_period"type="text" value="0">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form panel panel-default">
+                <div class="panel-heading" >
+                    Add Operation
+                </div>
+                </div>
+        </div>
     </div>
+    {% endverbatim %}
 </div>
 
 
 <script>
 
-var app = angular.module('myApp', ['angular-popups']);
-app.factory('TreeData', function($q, $http) {
+var app = angular.module('myApp', ['angular-popups','ngDialog']);
+app.factory('TreeData', function($q, $http,ngDialog) {
 
   function TreeData(cbIsSame) {
     var _this = this;
@@ -205,32 +374,18 @@ app.factory('TreeData', function($q, $http) {
 
     /**
      * 添加子节点
-     * @param parent {Object}
+     * @param module {Object}
      * @param item {Object}
      */
-    this.addItem = function(parent){
-      parent.items.push({name:"Child"});
+    this.addCase = function(module,item){
+      module.items.push(item);
     };
 
     /**
      * 添加父节点
      */
-    this.addParent = function(){
-      var myData={};
-      myData["parent"] = {{project_id}};
-      myData["name"] = "ParentTest1";
-      myData["desc"] = "test123";
-      myData["repeat"] = 0;
-      myData["priority"] = 1;
-
-      $http({
-            method: 'POST',
-            url: "/apis/modules",
-            data: myData
-            }).
-        then(function(response) {
-            _this.tree.push(response.data);
-        });
+    this.addModule = function(module){
+         _this.tree.push(module);
     };
 
     /**
@@ -238,10 +393,7 @@ app.factory('TreeData', function($q, $http) {
      * @param item {Object}
      */
     this.updateItem = function(item){
-        $http.get("/apis/projects/{{project_id}}/modules").
-        then(function(response) {
-            alert("ffffff");
-        });
+
     };
 
     /**
@@ -249,10 +401,7 @@ app.factory('TreeData', function($q, $http) {
      * @param item {Object}
      */
     this.deleteItem = function(item){
-        $http.delete("/apis/modules/"+item.id).
-        then(function(response) {
-            alert("ffffff");
-        });
+
     };
 
     /**
@@ -286,232 +435,153 @@ app.factory('TreeData', function($q, $http) {
   return TreeData;
 });
 
-app.controller('treeData', function ($scope, $http, TreeData) {
+app.service('OperationList', function($q, $http) {
+    var self = this;
+    this.fuck = "default";
+    this.list = [];
+    this.initList = function(testCase) {
+        $http.get("/apis/cases/"+testCase.id+"/requests").
+        then(function(response) {
+            self.list.splice(0,self.list.length);
+            for (var i=0;i<response.data.length;i++){
+                self.list.push(response.data[i]);
+            }
+        });
+    };
+});
+
+app.controller('treeData', function ($scope, $http, TreeData, ngDialog, OperationList) {
   var vm = $scope.vm = {};
   vm.tree = new TreeData();
+
   vm.tree.init().then(function(ret){
     vm.navData = ret;
   });
+
+  $scope.openModuleEditor = function (module) {
+        $scope.saveFlag = true;
+        if(typeof(module)=="undefined"){
+            $scope.saveFlag = false;
+        }
+        $scope.currentModule = module;
+        ngDialog.open({ template: 'moduleEditor', className: 'ngdialog-theme-default',scope: $scope });
+    };
+
+  $scope.openCaseEditor = function (module,item) {
+        $scope.saveFlag = true;
+        if(typeof(item)=="undefined"){
+            $scope.saveFlag = false;
+        }
+        $scope.currentParentModule = module;
+        $scope.currentCase = item;
+        ngDialog.open({ template: 'caseEditor', className: 'ngdialog-theme-default',scope: $scope });
+   };
+
+  $scope.addModule = function (module){
+      var myData = {};
+      myData["parent"] = {{project_id}};
+      myData["name"] = module.name;
+      myData["desc"] = module.desc;
+      myData["repeat"] = module.repeat;
+      myData["priority"] = 1;
+
+      $http({
+            method: 'POST',
+            url: "/apis/modules",
+            data: myData
+            }).
+        then(function(response) {
+            vm.tree.addModule(response.data);
+        });
+
+  };
+
+  $scope.updateModule = function(module){
+          var myData = {};
+          myData["name"] = module.name;
+          myData["desc"] = module.desc;
+          myData["repeat"] = module.repeat;
+          myData["priority"] = 1;
+
+          $http({
+                method: 'PUT',
+                url: "/apis/modules/"+module.id,
+                data: myData
+                }).
+            then(function(response) {
+                alert("ok");
+                module = response.data;
+        });
+  };
+
+
+  $scope.deleteModule = function(module){
+    $http.delete("/apis/modules/"+module.id).
+        then(function(response) {
+            alert("ok");
+            module = {name:'deleted'};
+        });
+  };
+
+  $scope.addCase = function (module,item){
+      var myData = {};
+      myData["parent"] = module.id;
+      myData["name"] = item.name;
+      myData["desc"] = item.desc;
+      myData["repeat"] = item.repeat;
+      myData["priority"] = 1;
+
+      $http({
+            method: 'POST',
+            url: "/apis/cases",
+            data: myData
+            }).
+        then(function(response) {
+            vm.tree.addCase(module,response.data);
+        });
+
+  };
+
+  $scope.updateCase = function(module,item){
+          var myData = {};
+          myData["name"] = item.name;
+          myData["desc"] = item.desc;
+          myData["repeat"] = item.repeat;
+          myData["priority"] = 1;
+
+          $http({
+                method: 'PUT',
+                url: "/apis/cases/"+item.id,
+                data: myData
+                }).
+            then(function(response) {
+                alert("ok");
+                item = response.data;
+        });
+  };
+
+  $scope.deleteCase = function(item){
+    $http.delete("/apis/cases/"+item.id).
+        then(function(response) {
+            alert("ok");
+            item = {name:'deleted'};
+        });
+  };
+
+  $scope.getOperations = function(testCase){
+        OperationList.initList(testCase);
+  };
+
 });
 
-app.factory('OperationData', function($q, $http) {
-
-}
-
-app.controller('operations', function ($scope, $http, OperationData) {
-  var vm = $scope.operation = {};
-  vm.operations = new OperationData();
-  vm.operations.init().then(function(ret){
-    vm.navData = ret;
-  });
-});
-
-</script>
-
-
-<script type="text/javascript">
-var CURRENT_REQUEST_ID = "";
-var CURRENT_CASE_ID = "";
-
-function getCaseOperations(caseId){
-    $.getJSON( "/apis/cases/"+caseId+"/requests", function (data){
-        $.each(data, function(){
-            var object = this;
-            var items = [];
-            items.push( '<li class="case-item"> <div class="item-heading" name="operation" id="'+caseId+'-'+object["id"]+'">'+object["name"]+'</div></li>' );
-
-            var ul = '<ul class="operation-tree">'+items.join( "" )+'</ul>'
-
-            $("#"+caseId).parent().append(ul);
-        });
-    });
-}
-
-function getOperation(scopeId,operationId){
-    CURRENT_REQUEST_ID = operationId;
-    CURRENT_CASE_ID = scopeId;
-    $.getJSON( "/apis/cases/"+scopeId+"/requests/"+operationId, function (data){
-
-        $("#method").children().removeAttr("selected");
-        $("#method option[value='"+data.method+"']").attr("selected","selected");
-
-        $("#expect_status").attr("value",data.expect_status);
-        $("#url").attr("value",data.url);
-        $("#headers").html("");
-        if (data.header!=""){
-            var headerJSON =JSON.parse(data.header);
-            $.each(headerJSON, function(name, value){
-                var items = [];
-                items.push('<td><input type="text" name="key" class="form-control" value="'+name+'"></td>');
-                items.push('<td><input type="text" name="value"class="form-control" value="'+value+'"></td>');
-                var tr = '<tr">'+items.join( "" )+'</tr>';
-                $("#headers").append(tr);
-            });
-         }
-
-         $("#parameters").html("");
-         if (data.params!=""){
-            var paramJSON =JSON.parse(data.params);
-            $.each(paramJSON, function(name, value){
-                var items = [];
-                items.push('<td><input type="text" name="key" class="form-control" value="'+name+'"></td>');
-                items.push('<td><input type="text" name="value" class="form-control" value="'+value+'"></td>');
-                var tr = '<tr">'+items.join( "" )+'</tr>';
-                $("#parameters").append(tr);
-            });
-         }
-        $("#body").text(data.body);
-        $("#validation").text(data.test_code);
-        $("#wait_timeout").attr("value",data.wait_timeout);
-        $("#wait_period").attr("value",data.wait_timeout);
-        $("div.panel-default").show();
-    });
-}
-
-function getModuleCases(moduleId){
-    $.getJSON( "/apis/modules/"+moduleId+"/cases", function (data){
-        $.each(data, function(){
-            var object = this;
-            var items = [];
-            items.push( '<li class="case-item"> <div class="item-heading" name="case" id="'+object["id"]+'">'+object["name"]+' </div><span name="case" id="'+object["id"]+'" class="glyphicon glyphicon-plus"></span></li>' );
-
-            var ul = '<ul class="case-tree">'+items.join( "" )+'</ul>'
-
-            $("#"+moduleId).parent().append(ul);
-        });
-    });
-}
-
-function getProjectModules(projectId){
-    $.getJSON( "/apis/projects/"+projectId+"/modules", function (data){
-        $.each(data, function(){
-            var object = this;
-            var items = [];
-            var module_id = object["id"];
-            items.push( '<li class="module-item"> <div class="item-heading" name="module" id="'+object["id"]+'">'+object["name"]+' </div><span name="module" id="'+object["id"]+'" class="glyphicon glyphicon-plus"></span></li>' );
-            $("ul.module-tree").append(items.join( "" ));
-        });
-    });
-}
-
-function deleteRequest(scopeId,requestId){
-
-    $.ajax({
-       url: '/apis/cases/'+scopeId+'/requests/'+requestId,
-       type: 'DELETE',
-       success: function(data){
-                            alert("ok");
-                        },
-                        error: function(data){
-                            alert("not ok");
-                        }
-    });
-}
-
-function saveRequest(scopeId,requestId,body){
-
-    $.ajax({
-       url: '/apis/cases/'+scopeId+'/requests/'+requestId,
-       type: 'PUT',
-       contentType: "application/json; charset=utf-8",
-       data:JSON.stringify(body),
-       dataType:"json",
-       success: function(data){
-                            alert("ok");
-                        },
-                        error: function(data){
-                            alert("not ok");
-                        }
-    });
-}
-
-function getDataFromTable(tableId){
-    var dict = {};
-    alert($("#"+tableId).children().length);
-    $.each($("#"+tableId).find("tr"), function(){
-        var key = $(this).find("input[name='key']").val();
-        var value = $(this).find("input[name='value']").val();
-        dict[key] = value;
-        alert(dict[key]);
-    });
-    return JSON.stringify(dict);
-}
-
-getProjectModules({{project_id}});
-
-$(document).ready(function(){
-
-    $( "#dialog-form" ).dialog({
-      autoOpen: false,
-    });
-
-  $(".module-tree").on("click",".item-heading",function(){
-      var children = $(this).nextAll("ul");
-      var catalog_id = $(this).attr("id");
-      var name = $(this).attr("name");
-      if (children.length==0){
-        if(name=="module"){
-            getModuleCases(catalog_id);
-        }
-        else if(name=="case"){
-            getCaseOperations(catalog_id);
-        }
-        else {
-            var caseId = catalog_id.split("-")[0];
-            var operationId = catalog_id.split("-")[1];
-            getOperation(caseId,operationId);
-        }
-      }
-      if (name!="operation"){
-        $(this).nextAll("ul").toggle();
-      }
-  });
-
-  $(".nav-tabs").on("click","li",function(){
-        $(this).siblings().removeClass("active");
-        $(this).attr("class","active");
-        var name = $(this).attr("name");
-        $(".request-block").hide();
-        $("#"+name).show();
-
-  });
-
-  $("div.form").on("click","#save",function(){
-        $.valHooks.textarea = {
-          get: function( elem ) {
-            return elem.value.replace( /\r?\n/g, "\r\n" );
-          }
-        };
-       var data={};
-       data["method"] = $("#method").val();
-       data["url"] = $("#url").val();
-       data["header"] = getDataFromTable("headers");
-       data["params"] = getDataFromTable("parameters");
-       alert(data["header"]);
-       data["body"] = $("#body").val();
-       data["expect_status"] = parseInt($("#expect_status").val());
-       data["test_code"] = $("#validation").val();
-       data["wait_timeout"] = parseInt($("#wait_timeout").val());
-       data["wait_period"] = parseInt($("#wait_period").val());
-       data["drive_data"] = "";
-       saveRequest(CURRENT_CASE_ID,CURRENT_REQUEST_ID,data);
-
-  });
-
-  $("#delete").click(function(){
-    deleteRequest(CURRENT_CASE_ID,CURRENT_REQUEST_ID);
-  });
-
-  $(".module-tree").on("click","span.glyphicon",function(){
-        $("#dialog-form" ).dialog( "open" );
-  });
-
-
+app.controller('operationCtrl', function ($scope, $http, OperationList) {
+  $scope.operations = OperationList.list;
 });
 
 
 
 
 </script>
+
 </body>
 </html>
