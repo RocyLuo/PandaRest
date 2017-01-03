@@ -48,10 +48,8 @@ class RequestOperation(models.Model):
     name = models.CharField(max_length=50)
     desc = models.TextField(default="")
     is_template = models.SmallIntegerField(default=0)
-    method = models.CharField(max_length=10,choices=METHOD_CHOICES)
-    url = models.CharField(max_length=300)
-    header = models.CharField(max_length=500,blank=True, null=True)
-    params = models.CharField(max_length=300,blank=True, null=True)
+    method = models.CharField(max_length=10,choices=METHOD_CHOICES,default='get')
+    url = models.CharField(max_length=300,blank=True, null=True)
     body = models.TextField(blank=True, null=True)
     expect_status =  models.SmallIntegerField(default=200,blank=True, null=True)
     test_code = models.TextField(blank=True, null=True)
@@ -64,6 +62,33 @@ class RequestOperation(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Parameter(models.Model):
+    RequestOperation = models.ForeignKey(RequestOperation,related_name='parameters', blank=True, null=True)
+    key = models.CharField(max_length=50)
+    value = models.CharField(max_length=500)
+
+    def __str__(self):
+        return self.key + ":" + self.value
+
+
+class Header(models.Model):
+    RequestOperation = models.ForeignKey(RequestOperation,related_name='headers', blank=True, null=True)
+    key = models.CharField(max_length=50)
+    value = models.CharField(max_length=500)
+
+    def __str__(self):
+        return self.key + ":" + self.value
+
+
+class Extractor(models.Model):
+    RequestOperation = models.ForeignKey(RequestOperation,related_name='extractors', blank=True, null=True)
+    variable_name = models.CharField(max_length=50)
+    path = models.CharField(max_length=500)
+
+    def __str__(self):
+        return self.variable_name + ":" + self.path
 
 
 class DBOperation(models.Model):

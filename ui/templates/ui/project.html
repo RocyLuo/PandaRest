@@ -231,8 +231,8 @@
                                 <input class="form-control" ng-model="operation.expect_status" type="text">
                             </div>
                         </div>
-                        <button type="button" class="btn btn-primary">Save</button>
-                        <button type="button" class="btn btn-danger">Delete</button>
+                        <button type="button" class="btn btn-primary" ng-click="operationService.update(operation)">Save</button>
+                        <button type="button" class="btn btn-danger" ng-click="operationService.delete(operation)">Delete</button>
                     </form>
                     <ul class="nav nav-tabs" role="tablist">
                         <li role="presentation" name="headers" ng-click="switchVar='headers'"
@@ -241,8 +241,8 @@
                             ng-class="{'active':switchVar=='parameters'}"><a href="#">Parameters</a></li>
                         <li role="presentation" name="body" ng-click="switchVar='body'"
                             ng-class="{'active':switchVar=='body'}"><a href="#">Body</a></li>
-                        <li role="presentation" name="validation" ng-click="switchVar='validation'"
-                            ng-class="{'active':switchVar=='validation'}"><a href="#">Validation</a></li>
+                        <li role="presentation" name="assert" ng-click="switchVar='assert'"
+                            ng-class="{'active':switchVar=='assert'}"><a href="#">Assert</a></li>
                         <li role="presentation" name="expectedBody" ng-click="switchVar='expectedBody'"
                             ng-class="{'active':switchVar=='expectedBody'}"><a href="#">Expected Body</a></li>
                         <li role="presentation" name="extractor" ng-click="switchVar='extractor'"
@@ -252,27 +252,29 @@
                     </ul>
                     <div ng-switch="switchVar">
                         <div ng-switch-default>
-                            <table class="table table-hover request-block">
-                                <tr>
-                                    <td><input type="text" name="key" class="form-control" placeholder="key"></td>
-                                    <td><input type="text" name="value" class="form-control" placeholder="value"></td>
+                            <table class="table table-hover">
+                                <tr ng-repeat="header in operation.headers">
+                                    <td><input type="text" ng-model="header.key" class="form-control" placeholder="key"></td>
+                                    <td><input type="text" ng-model="header.value" class="form-control" placeholder="value"></td>
                                 </tr>
                             </table>
+                            <span class="glyphicon glyphicon-plus" ng-click="operationService.addHeader(operation)"></span>
                         </div>
-                        <div ng-switch-when="Parameters">
-                            <table class="table table-hover request-block">
-                                <tr>
-                                    <td><input type="text" name="key" class="form-control" placeholder="key"></td>
-                                    <td><input type="text" name="value" class="form-control" placeholder="value"></td>
+                        <div ng-switch-when="parameters">
+                            <table class="table table-hover">
+                                <tr ng-repeat="parameter in operation.parameters">
+                                    <td><input type="text" ng-model="parameter.key" class="form-control" placeholder="key"></td>
+                                    <td><input type="text" ng-model="parameter.value" class="form-control" placeholder="value"></td>
                                 </tr>
                             </table>
+                            <span class="glyphicon glyphicon-plus" ng-click="operationService.addParameter(operation)"></span>
                         </div>
                         <div ng-switch-when="body">
                             <div class="form-group">
                                 <textarea class="form-control request-block" ng-model="operation.body" rows="8"></textarea>
                             </div>
                         </div>
-                        <div ng-switch-when="validation">
+                        <div ng-switch-when="assert">
                             <div class="form-group">
                     <textarea class="form-control request-block" ng-model="operation.test_code"
                               rows="8"></textarea>
@@ -284,27 +286,28 @@
                             </div>
                         </div>
                         <div ng-switch-when="extractor">
-                            <table class="table table-hover request-block">
-                                <tr>
-                                    <td><input type="text" name="key" class="form-control" placeholder="variable name">
+                            <table class="table table-hover">
+                                <tr ng-repeat="extractor in operation.extractors">
+                                    <td><input type="text" ng-model="extractor.variable_name" class="form-control" placeholder="variable name">
                                     </td>
-                                    <td><input type="text" name="value" class="form-control"
+                                    <td><input type="text" ng-model="extractor.path" class="form-control"
                                                placeholder="variable path"></td>
                                 </tr>
                             </table>
+                            <span class="glyphicon glyphicon-plus"ng-click="operationService.addExtractor(operation)"></span>
                         </div>
                         <div ng-switch-when="repeat">
-                            <form class="request-block form-inline" role="form">
+                            <form class="form-inline" role="form">
                                 <div class="form-group">
                                     <div class="input-group">
                                         <div class="input-group-addon">Timeout</div>
-                                        <input class="form-control"ng-model="operation.wait_timeout" type="text" value="0">
+                                        <input class="form-control"ng-model="operation.wait_timeout">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <div class="input-group">
                                         <div class="input-group-addon">Period</div>
-                                        <input class="form-control" ng-model="operation.wait_period"type="text" value="0">
+                                        <input class="form-control" ng-model="operation.wait_period">
                                     </div>
                                 </div>
                             </form>
@@ -314,16 +317,56 @@
             </div>
             <div class="form panel panel-default">
                 <div class="panel-heading" >
-                    Add Operation
+                    <button ng-click="openOperationEditor(operation)">Add Operation</button>
                 </div>
-                </div>
+            </div>
         </div>
+        <script type="text/ng-template" id="operationEditor">
+                    <div ng-show="!saveFlag" class="dialog-title">Add Operation</div>
+                    <div ng-show="saveFlag" class="dialog-title">Update Operation</div>
+                    <div class="dialog-contents">
+                        <input type="text" ng-model="currentOperation.id" hidden="true">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" ng-model="currentOperation.name" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea ng-model="currentOperation.desc" class="form-control"
+                                      rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Skip Next</label>
+                            <input type="text" ng-model="currentOperation.skip_next" class="form-control">
+                        </div>
+                        <button ng-show="!saveFlag" ng-click="addOperation(currentOperation);closeThisDialog()"
+                                class="btn btn-primary">Save
+                        </button>
+                        <button ng-show="saveFlag" ng-click="updateOperation(currentOperation);closeThisDialog()"
+                                class="btn btn-primary">Update
+                        </button>
+                    </div>
+                </script>
     </div>
     {% endverbatim %}
 </div>
 
 
 <script>
+
+Array.prototype.indexOf = function(val) {
+    for (var i = 0; i < this.length; i++) {
+        if (this[i] == val) return i;
+    }
+return -1;
+};
+
+Array.prototype.remove = function(val) {
+    var index = this.indexOf(val);
+    if (index > -1) {
+        this.splice(index, 1);
+    }
+};
 
 var app = angular.module('myApp', ['angular-popups','ngDialog']);
 app.factory('TreeData', function($q, $http,ngDialog) {
@@ -449,10 +492,38 @@ app.service('OperationList', function($q, $http) {
         });
     };
 
-    this.updateOperation(operation){
+    this.update = function(operation){
 
-
+      $http({
+            method: 'PUT',
+            url: "/apis/cases/"+operation.catalog+"/requests/"+operation.id,
+            data: operation
+            }).
+        then(function(response) {
+            console.log(operation);
+        });
     };
+
+    this.delete = function(operation){
+        $http.delete("/apis/cases/"+operation.catalog+"/requests/"+operation.id).
+        then(function(response) {
+            alert("ok");
+            self.list.remove(operation);
+        });
+    };
+
+    this.addHeader = function(operation){
+        operation.headers.push({key:'',value:''});
+    };
+
+    this.addParameter = function(operation){
+        operation.parameters.push({key:'',value:''});
+    };
+
+    this.addExtractor = function(operation){
+        operation.extractors.push({variable_name:'',path:''});
+    };
+
 });
 
 app.controller('treeData', function ($scope, $http, TreeData, ngDialog, OperationList) {
@@ -579,8 +650,18 @@ app.controller('treeData', function ($scope, $http, TreeData, ngDialog, Operatio
 
 });
 
-app.controller('operationCtrl', function ($scope, $http, OperationList) {
-  $scope.operations = OperationList.list;
+app.controller('operationCtrl', function ($scope, $http, OperationList,ngDialog) {
+  $scope.operationService = OperationList
+  $scope.operations = $scope.operationService.list;
+
+  $scope.openOperationEditor = function (operation) {
+        $scope.saveFlag = true;
+        if(typeof(operation)=="undefined"){
+            $scope.saveFlag = false;
+        }
+        $scope.currentOperation = operation;
+        ngDialog.open({ template: 'operationEditor', className: 'ngdialog-theme-default',scope: $scope });
+    };
 });
 
 

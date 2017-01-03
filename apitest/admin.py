@@ -11,6 +11,9 @@ from .models import *
 admin.site.register(DBOperation)
 admin.site.register(OperationLog)
 admin.site.register(Report)
+admin.site.register(Parameter)
+admin.site.register(Header)
+admin.site.register(Extractor)
 
 class VaribaleInline(admin.StackedInline):
     model = Variable
