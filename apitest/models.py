@@ -55,6 +55,7 @@ class RequestOperation(models.Model):
     body = models.TextField(blank=True, null=True)
     expect_status =  models.SmallIntegerField(default=200,blank=True, null=True)
     test_code = models.TextField(blank=True, null=True)
+    expected_body = models.TextField(blank=True, null=True)
     priority = models.SmallIntegerField(default=1)
     skip_next = models.SmallIntegerField(default=0)
     wait_timeout = models.SmallIntegerField(default=0)
