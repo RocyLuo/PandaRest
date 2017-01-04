@@ -65,7 +65,7 @@ class RequestOperation(models.Model):
 
 
 class Parameter(models.Model):
-    RequestOperation = models.ForeignKey(RequestOperation,related_name='parameters', blank=True, null=True)
+    requestOperation = models.ForeignKey(RequestOperation,related_name='parameters', blank=True, null=True)
     key = models.CharField(max_length=50)
     value = models.CharField(max_length=500)
 
@@ -74,7 +74,7 @@ class Parameter(models.Model):
 
 
 class Header(models.Model):
-    RequestOperation = models.ForeignKey(RequestOperation,related_name='headers', blank=True, null=True)
+    requestOperation = models.ForeignKey(RequestOperation,related_name='headers', blank=True, null=True)
     key = models.CharField(max_length=50)
     value = models.CharField(max_length=500)
 
@@ -83,7 +83,7 @@ class Header(models.Model):
 
 
 class Extractor(models.Model):
-    RequestOperation = models.ForeignKey(RequestOperation,related_name='extractors', blank=True, null=True)
+    requestOperation = models.ForeignKey(RequestOperation,related_name='extractors', blank=True, null=True)
     variable_name = models.CharField(max_length=50)
     path = models.CharField(max_length=500)
 

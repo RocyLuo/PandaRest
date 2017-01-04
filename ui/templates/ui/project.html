@@ -339,7 +339,7 @@
                             <label>Skip Next</label>
                             <input type="text" ng-model="currentOperation.skip_next" class="form-control">
                         </div>
-                        <button ng-show="!saveFlag" ng-click="addOperation(currentOperation);closeThisDialog()"
+                        <button ng-show="!saveFlag" ng-click="operationService.add(currentOperation);closeThisDialog()"
                                 class="btn btn-primary">Save
                         </button>
                         <button ng-show="saveFlag" ng-click="updateOperation(currentOperation);closeThisDialog()"
@@ -482,7 +482,9 @@ app.service('OperationList', function($q, $http) {
     var self = this;
     this.fuck = "default";
     this.list = [];
+    this.testCase = {};
     this.initList = function(testCase) {
+        self.testCase = testCase;
         $http.get("/apis/cases/"+testCase.id+"/requests").
         then(function(response) {
             self.list.splice(0,self.list.length);
@@ -490,6 +492,17 @@ app.service('OperationList', function($q, $http) {
                 self.list.push(response.data[i]);
             }
         });
+    };
+
+    this.add = function(operation){
+          $http({
+                method: 'POST',
+                url: "/apis/cases/"+self.testCase.id+"/requests",
+                data: operation
+                }).
+            then(function(response) {
+                self.list.push(response.data);
+            });
     };
 
     this.update = function(operation){
@@ -662,6 +675,7 @@ app.controller('operationCtrl', function ($scope, $http, OperationList,ngDialog)
         $scope.currentOperation = operation;
         ngDialog.open({ template: 'operationEditor', className: 'ngdialog-theme-default',scope: $scope });
     };
+
 });
 
 

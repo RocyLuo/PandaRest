@@ -33,9 +33,9 @@ class ExtractorSerializer(serializers.ModelSerializer):
 
 
 class RequestSerializer(serializers.ModelSerializer):
-    parameters = ParameterSerializer(many=True,required=True)
-    headers = HeaderSerializer(many=True,required=True)
-    extractors = ExtractorSerializer(many=True,required=True)
+    parameters = ParameterSerializer(many=True,required=False)
+    headers = HeaderSerializer(many=True,required=False)
+    extractors = ExtractorSerializer(many=True,required=False)
 
     class Meta:
         model = RequestOperation
@@ -58,18 +58,18 @@ class RequestSerializer(serializers.ModelSerializer):
         headers_data = validated_data.pop('headers')
         extractors_data = validated_data.pop('extractors')
 
-        Parameter.objects.filter(RequestOperation=instance).delete()
-        Header.objects.filter(RequestOperation=instance).delete()
-        Extractor.objects.filter(RequestOperation=instance).delete()
+        Parameter.objects.filter(requestOperation=instance).delete()
+        Header.objects.filter(requestOperation=instance).delete()
+        Extractor.objects.filter(requestOperation=instance).delete()
 
         for parameter_data in parameters_data:
-            Parameter.objects.create(RequestOperation=instance, **parameter_data)
+            Parameter.objects.create(requestOperation=instance, **parameter_data)
 
         for header_data in headers_data:
-            Header.objects.create(RequestOperation=instance, **header_data)
+            Header.objects.create(requestOperation=instance, **header_data)
 
         for extractor_data in extractors_data:
-            Extractor.objects.create(RequestOperation=instance, **extractor_data)
+            Extractor.objects.create(requestOperation=instance, **extractor_data)
 
         instance.save()
         return instance

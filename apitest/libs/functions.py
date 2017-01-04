@@ -3,7 +3,7 @@
     such as [class:`Catalog <model.Model.Catalog>` object,class:`Catalog <model.Model.Catalog>` object,..]
 """
 from ..models import *
-from  Request import Request
+from Request import Request
 from Database import *
 
 
@@ -14,22 +14,26 @@ def run(catalog_id):
     """
     # it is the most complicated core logic function
     # so, get a couple of coffee
+    print 'start running'
     catalog = Catalog.objects.get(pk=catalog_id)
     cases = get_catalog_cases(catalog)
     project = get_catalog_project(catalog)
     report = create_report(project, cases)
+    print 'got '+str(len(cases))+' cases'
     for case in cases:
         skip = False
         path = get_case_path(case)
         variables = get_case_variables(case)
         operations = get_case_operations(case)
         repeat = case.repeat
+        print 'start running a case'
         while repeat > 0:
             repeat -= 1
             for operation in operations:
                 if isinstance(operation, RequestOperation):
                     request = Request(operation, variables)
                     for result in request.excute(skip):
+                        print str(result)
                         if operation.skip_next == 1 and not result["assert_result"] == "Pass":
                             skip = True
                         save_request_operation_log(report, path, result)
@@ -74,7 +78,6 @@ def get_case_path(case):
             recur_catalog_up(parent)
 
     recur_catalog_up(case)
-    print "get case path====" + str(result)
     return result
 
 
@@ -116,7 +119,7 @@ def save_request_operation_log(report, path, request_result):
     :param report:
     :param path:
     :param request_result:
-    :return:
+    :return: Operation_log
     """
     operation_log = OperationLog()
     operation_log.report = report
@@ -128,7 +131,7 @@ def save_request_operation_log(report, path, request_result):
     operation_log.assert_result = request_result["assert_result"]
     operation_log.assert_info = request_result["assert_info"]
     operation_log.save()
-    return
+    return operation_log
 
 
 def save_db_operation_log(report, path, db_result):

@@ -2,29 +2,47 @@ import requests
 import re
 import json
 import time
-from userFunctions import *
+from customFunctions import *
 
 class Request:
 
     def __init__(self, operation, variables):
-        self.header = operation.header
+        self.header = self._get_string_headers(operation)
         self.method = operation.method
         self.url = operation.url
-        self.params = operation.params
-        self.body = operation.body
+        self.real_url = operation.url
+        self.params = self._get_string_params(operation)
+        self.body = self._remove_space(operation.body)
         self.variables = variables
         self.expect_status = operation.expect_status
         self.code = operation.test_code
-        self.real_url = operation.url
+        self.expected_body = operation.expected_body
+        self.drive_data = operation.drive_data
         self.operation = operation
-        self.replace_all()
+        self.replace_variables()
 
-    def replace_all(self):
+
+    def _get_string_headers(self, operation):
+        return '{'+','.join(['"'+header.key+'":"'+header.value+'"' for header in operation.headers.all()])+'}'
+
+    def _get_string_params(self, operation):
+        return '{' + ','.join(['"' + header.key + '":"' + header.value + '"' for header in operation.parameters.all()])+'}'
+
+    def _remove_space(self,s):
+        if not s is None:
+            s = s.replace('\n', '')
+            s = s.replace(' ', '')
+        return s
+
+    def replace_variables(self):
         self.header = self.get_variables(self.header)
         self.url = self.get_variables(self.url)
         self.real_url = self.url
-        self.body = self.get_variables(self.body)
+
         self.params = self.get_variables(self.params)
+        if not (self.body is None or self.body == ''):
+            self.body = self.get_variables(self.body)
+
         if not (self.header is None or self.header == ''):
             self.header = self.get_variables(self.header)
             self.header = json.loads(self.header)
@@ -32,6 +50,11 @@ class Request:
             self.params = self.get_variables(self.params)
             self.params = json.loads(self.params)
             self.real_url = self.url+self._dict_to_param_str(self.params)
+
+    def _exec_func(self, func):
+        ret = None
+        exec "ret = " + func
+        return str(ret)
 
     def get_variables(self, s):
         def find_variable(matched):
@@ -44,7 +67,15 @@ class Request:
                         return var.value
             return matched.group()
 
-        return re.sub(r'{{[0-9a-zA-Z]*}}', find_variable, s)
+        def find_function(matched):
+            func = matched.group()
+            func = func.replace('{%', '')
+            func = func.replace('%}', '')
+            return self._exec_func(func)
+
+        replaced_vars = re.sub(r'{{[0-9a-zA-Z]*}}', find_variable, s)
+        replaced_func = re.sub(r'{%.*%}', find_function, replaced_vars)
+        return replaced_func
 
     def _dict_to_param_str(self,params):
         result = []
