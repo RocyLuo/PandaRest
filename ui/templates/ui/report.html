@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'ui/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'ui/css/base.css' %}">
+    <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+    <script src="{% static 'ui/bootstrap/js/bootstrap.js' %}"></script>
+    <script src="{% static 'ui/js/angular.min.js' %}"></script>
+</head>
+<body ng-app="myApp">
+{% verbatim %}
+<div class="row" ng-controller="reportCtrl">
+        <div class="col-md-2">
+            <ul>
+                <li ng-repeat="report in reports" ng-click="getLogs(report)">{{report.start_time}}</li>
+            </ul>
+        </div>
+
+        <div class="col-md-10">
+            <table class="table table-hover" ng-repeat="log in logs">
+                <thead ng-click="showFlag=!showFlag">
+                    <td>Assert Result</td>
+                    <td>{{log.assert_result}}</td>
+                </thead>
+                <tbody ng-show="showFlag">
+                <tr>
+                    <td>Time</td>
+                    <td>{{log.create_time}}</td>
+                </tr>
+                <tr>
+                    <td>Module</td>
+                    <td>{{log.module_name}}</td>
+                </tr>
+                <tr>
+                    <td>Case</td>
+                    <td>{{log.case_name}}</td>
+                </tr>
+                <tr>
+                    <td>Type</td>
+                    <td>{{log.type}}</td>
+                </tr>
+                <tr>
+                    <td>Info</td>
+                    <td>{{log.operation_info}}</td>
+                </tr>
+                <tr>
+                    <td>Result</td>
+                    <td>{{log.operation_result}}</td>
+                </tr>
+                <tr>
+                    <td>Assert Result</td>
+                    <td>{{log.assert_result}}</td>
+                </tr>
+                <tr>
+                    <td>Assert Info</td>
+                    <td>{{log.assert_info}}</td>
+                </tr>
+                </tbody>
+
+            </table>
+        </div>
+</div>
+{% endverbatim %}
+</body>
+</html>
+
+<script>
+var app = angular.module('myApp', []);
+app.controller('reportCtrl', function ($scope, $http) {
+    $scope.projectId = {{project_id}};
+    $scope.reports = []
+    $scope.logs = []
+    $http.get("/apis/projects/"+$scope.projectId+"/reports").
+        then(function(response) {
+            $scope.reports = response.data;
+    });
+
+    $scope.getLogs = function(report){
+        $http.get("/apis/projects/"+$scope.projectId+"/reports/"+report.id).
+        then(function(response) {
+            $scope.logs = response.data;
+        });
+    };
+});
+</script>

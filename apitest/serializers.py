@@ -32,6 +32,18 @@ class ExtractorSerializer(serializers.ModelSerializer):
         fields = ('variable_name', 'path')
 
 
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
+        fields = '__all__'
+
+
+class OperationLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OperationLog
+        fields = '__all__'
+
+
 class RequestSerializer(serializers.ModelSerializer):
     parameters = ParameterSerializer(many=True,required=False)
     headers = HeaderSerializer(many=True,required=False)

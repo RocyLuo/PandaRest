@@ -24,6 +24,9 @@ urlpatterns = [
     url(r'^(?P<scope>[a-z]+)/(?P<scope_id>[0-9]+)/requests$', views.request_list),
     url(r'^(?P<scope>[a-z]+)/(?P<scope_id>[0-9]+)/requests/(?P<request_id>[0-9]+)$', views.request_detail),
 
+    url(r'^projects/(?P<project_id>[0-9]+)/reports$', views.report_list),
+    url(r'^projects/(?P<project_id>[0-9]+)/reports/(?P<report_id>[0-9]+)$', views.report_detail),
+
     url(r'^(?P<scope>[a-z]+)$', views.catalog_list),
     url(r'^(?P<scope>[a-z]+)/(?P<pk>[0-9]+)$', views.catalog_detail),
     url(r'^(?P<scope>[a-z]+)/(?P<pk>[0-9]+)/(?P<subscope>[a-z]+)$', views.catalog_subctalog),

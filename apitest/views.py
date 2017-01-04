@@ -277,6 +277,22 @@ def project_detail(request, pk):
         return HttpResponse(status=204)
 
 
+@csrf_exempt
+def report_list(request,project_id):
+    reports = Report.objects.all().filter(project_id=project_id).order_by('start_time')
+    if request.method == 'GET':
+        serializer = ReportSerializer(reports, many=True)
+        return JSONResponse(serializer.data)
+
+
+@csrf_exempt
+def report_detail(request,project_id,report_id):
+    operation_logs = OperationLog.objects.all().filter(report__id=report_id)
+    if request.method == 'GET':
+        serializer = OperationLogSerializer(operation_logs, many=True)
+        return JSONResponse(serializer.data)
+
+
 def test(request,pk):
     try:
         Catalog.objects.get(pk=pk)

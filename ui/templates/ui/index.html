@@ -5,38 +5,39 @@
     <title>ApiTestFramework</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'ui/bootstrap/css/bootstrap.min.css' %}">
-
+    <link rel="stylesheet" href="{% static 'ui/css/base.css' %}">
     <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
     <script src="{% static 'ui/bootstrap/js/bootstrap.js' %}"></script>
-
+    <script src="{% static 'ui/js/angular.min.js' %}"></script>
 </head>
-<body>
-<div class="row">
-
-    <div class="col-md-4">
-
-    </div>
-
-  <div class="col-md-8">
-      {% for project in projects %}
-        <div class="col-md-4">
+<body ng-app="myApp">
+{% verbatim %}
+<div class="row" ng-controller="projectCtrl">
+        <div class="col-md-4" ng-repeat="project in projects">
             <div class="panel panel-default">
               <div class="panel-heading"><a href="/projects/{{project.id}}">{{project.name}}</a></div>
               <div class="panel-body">
                   <p>Total Cases: 100</p>
                   <p>Last Test Result: Fail</p>
                   <p>Pass:10</p>
+                  <p><a href="/projects/{{project.id}}/reports">Reports</a></p>
               </div>
             </div>
         </div>
-      {% endfor %}
-  </div>
-
 </div>
-
-
+{% endverbatim %}
 </body>
 </html>
+<script>
+var app = angular.module('myApp', []);
+app.controller('projectCtrl', function ($scope, $http) {
+    $scope.projects = [];
+    $http.get("/apis/projects").
+        then(function(response) {
+            $scope.projects = response.data;
+    });
+});
+</script>
 
 <script type="text/javascript">
 var CURRENT_REQUEST_ID = "";

@@ -13,8 +13,7 @@ def get_case_operations(case):
     return result
 
 def index(request):
-    projects = Catalog.objects.all().filter(type='Project')
-    return render(request, 'ui/index.html',{'projects':projects})
+    return render(request, 'ui/index.html')
 
 
 def project_detail(request, pk):
@@ -77,3 +76,6 @@ def project_detail(request, pk):
     print data
 
     return render(request, 'ui/project.html', {'project_id':pk})
+
+def project_reports(request, pk):
+    return render(request, 'ui/report.html',{'project_id':pk})
