@@ -14,18 +14,23 @@ admin.site.register(Report)
 admin.site.register(Parameter)
 admin.site.register(Header)
 admin.site.register(Extractor)
+admin.site.register(Function)
+
 
 class VaribaleInline(admin.StackedInline):
     model = Variable
     extra = 1
 
+
 class RequestInline(admin.StackedInline):
     model = RequestOperation
     extra = 1
 
+
 class DBInline(admin.StackedInline):
     model = DBOperation
     extra = 1
+
 
 class CatalogAdmin(admin.ModelAdmin):
     fields = ['parent', 'name', 'desc', 'status', 'priority', 'type']

@@ -11,6 +11,7 @@ class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
     """
+
     def __init__(self, data, **kwargs):
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'
@@ -60,21 +61,21 @@ def catalog_detail(request, scope, pk):
             return HttpResponse(status=404)
 
         if request.method == 'GET':
-            print "get:"+str(catalog)
+            print "get:" + str(catalog)
             serializer = CatalogSerializer(catalog)
             return JSONResponse(serializer.data)
 
         if request.method == 'PUT':
-            print "put:"+str(catalog)
+            print "put:" + str(catalog)
             data = JSONParser().parse(request)
-            serializer = CatalogSerializer(catalog, data=data,partial=True)
+            serializer = CatalogSerializer(catalog, data=data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return JSONResponse(serializer.data)
             return JSONResponse(serializer.errors, status=400)
 
         if request.method == 'DELETE':
-            print "delete:"+str(catalog)
+            print "delete:" + str(catalog)
             catalog.delete()
             return HttpResponse(status=200)
     else:
@@ -91,11 +92,12 @@ def catalog_subctalog(request, scope, pk, subscope):
         scope = scope[0:-1].capitalize()
         subscope = subscope[0:-1].capitalize()
         if request.method == 'GET':
-            catalogs = Catalog.objects.all().filter(parent__id=pk,type=subscope).order_by('priority')
+            catalogs = Catalog.objects.all().filter(parent__id=pk, type=subscope).order_by('priority')
             serializer = CatalogSerializer(catalogs, many=True)
             return JSONResponse(serializer.data)
     else:
         return HttpResponse(status=400)
+
 
 @csrf_exempt
 def var_list(request, scope, scope_id):
@@ -134,7 +136,7 @@ def var_detail(request, scope, scope_id, var_id):
     if scope in scope_list:
         scope = scope[0:-1].capitalize()
         try:
-            vars = Variable.objects.all().filter(catalog__id=scope_id,pk=var_id)
+            vars = Variable.objects.all().filter(catalog__id=scope_id, pk=var_id)
             if len(vars) > 0:
                 var = vars[0]
             else:
@@ -148,7 +150,7 @@ def var_detail(request, scope, scope_id, var_id):
 
         elif request.method == 'PUT':
             data = JSONParser().parse(request)
-            serializer = VariableSerializer(var, data=data,partial=True)
+            serializer = VariableSerializer(var, data=data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return JSONResponse(serializer.data)
@@ -158,6 +160,65 @@ def var_detail(request, scope, scope_id, var_id):
             var.delete()
             return HttpResponse(status=204)
     else:
+        return HttpResponse(status=204)
+
+
+@csrf_exempt
+def function_list(request, project_id):
+    """
+    List all code catalogs, or create a new catalog.
+    """
+    try:
+        catalog = Catalog.objects.all().get(pk=project_id, type="Project")
+    except Catalog.DoesNotExist:
+        return HttpResponse(status=404)
+    if request.method == 'GET':
+        funcs = Function.objects.all().filter(catalog__id=project_id)
+        serializer = FunctionSerializer(funcs, many=True)
+        return JSONResponse(serializer.data)
+
+    elif request.method == 'POST':
+        data = JSONParser().parse(request)
+        data["catalog"] = project_id
+        data["name"] = data["code"][data["code"].find(' ')+1:data["code"].find('(')]
+        serializer = FunctionSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JSONResponse(serializer.data, status=200)
+        return JSONResponse(serializer.errors, status=400)
+
+
+@csrf_exempt
+def function_detail(request, project_id, function_id):
+    """
+    Retrieve, update or delete a code catalog.
+    """
+    try:
+        funcs = Function.objects.all().filter(catalog__id=project_id, pk=function_id)
+        if len(funcs) > 0:
+            func = funcs[0]
+        else:
+            return HttpResponse(status=404)
+    except Catalog.DoesNotExist:
+        return HttpResponse(status=404)
+
+    if request.method == 'GET':
+        serializer = FunctionSerializer(func)
+        return JSONResponse(serializer.data)
+
+    elif request.method == 'PUT':
+        data = JSONParser().parse(request)
+        data["catalog"] = project_id
+        data["id"] = function_id
+        data["name"] = data["code"][data["code"].find(' ') + 1:data["code"].find('(')]
+        serializer = FunctionSerializer(func, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return JSONResponse(serializer.data)
+        return JSONResponse(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        func.delete()
         return HttpResponse(status=204)
 
 
@@ -204,7 +265,7 @@ def request_detail(request, scope, scope_id, request_id):
     if scope in scope_list:
         scope = scope[0:-1].capitalize()
         try:
-            requests = RequestOperation.objects.all().filter(catalog__id=scope_id,pk=request_id)
+            requests = RequestOperation.objects.all().filter(catalog__id=scope_id, pk=request_id)
             if len(requests) > 0:
                 req = requests[0]
             else:
@@ -218,7 +279,7 @@ def request_detail(request, scope, scope_id, request_id):
 
         elif request.method == 'PUT':
             data = JSONParser().parse(request)
-            serializer = RequestSerializer(req, data=data,partial=True)
+            serializer = RequestSerializer(req, data=data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return JSONResponse(serializer.data)
@@ -229,6 +290,7 @@ def request_detail(request, scope, scope_id, request_id):
             return HttpResponse(status=204)
     else:
         return HttpResponse(status=204)
+
 
 @csrf_exempt
 def project_list(request):
@@ -256,7 +318,7 @@ def project_detail(request, pk):
     Retrieve, update or delete a code catalog.
     """
     try:
-        catalog = Catalog.objects.all().filter(pk=pk,type='Project')[0]
+        catalog = Catalog.objects.all().filter(pk=pk, type='Project')[0]
     except Catalog.DoesNotExist:
         return HttpResponse(status=404)
 
@@ -278,7 +340,7 @@ def project_detail(request, pk):
 
 
 @csrf_exempt
-def report_list(request,project_id):
+def report_list(request, project_id):
     reports = Report.objects.all().filter(project_id=project_id).order_by('start_time')
     if request.method == 'GET':
         serializer = ReportSerializer(reports, many=True)
@@ -286,14 +348,30 @@ def report_list(request,project_id):
 
 
 @csrf_exempt
-def report_detail(request,project_id,report_id):
+def report_detail(request, project_id, report_id):
+    """
+    :param request:
+    :param project_id:
+    :param report_id:
+    :return: [
+                {"Module":"Image",
+                 "Cases":[
+                     {"name":case1,
+                      "logs":[operationLog,..]
+                     },...
+                     ]
+                  },
+                  ,...
+                ]
+    """
+
     operation_logs = OperationLog.objects.all().filter(report__id=report_id)
     if request.method == 'GET':
         serializer = OperationLogSerializer(operation_logs, many=True)
         return JSONResponse(serializer.data)
 
 
-def test(request,pk):
+def test(request, pk):
     try:
         Catalog.objects.get(pk=pk)
     except Catalog.DoesNotExist:
@@ -302,4 +380,3 @@ def test(request,pk):
     run(pk)
 
     return HttpResponse(status=200)
-

@@ -36,6 +36,17 @@ class Variable(models.Model):
         return self.key + ":" + self.value
 
 
+class Function(models.Model):
+
+    catalog = models.ForeignKey(Catalog)
+    name = models.CharField(max_length=50)
+    desc = models.TextField()
+    code = models.TextField()
+
+    def __str__(self):
+        return self.desc + ":" + self.code
+
+
 class RequestOperation(models.Model):
 
     METHOD_CHOICES = (

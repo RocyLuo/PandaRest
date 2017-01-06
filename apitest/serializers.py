@@ -44,6 +44,12 @@ class OperationLogSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class FunctionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Function
+        fields = '__all__'
+
+
 class RequestSerializer(serializers.ModelSerializer):
     parameters = ParameterSerializer(many=True,required=False)
     headers = HeaderSerializer(many=True,required=False)

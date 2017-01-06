@@ -21,6 +21,9 @@ urlpatterns = [
     url(r'^(?P<scope>[a-z]+)/(?P<scope_id>[0-9]+)/variables$', views.var_list),
     url(r'^(?P<scope>[a-z]+)/(?P<scope_id>[0-9]+)/variables/(?P<var_id>[0-9]+)$', views.var_detail),
 
+    url(r'^projects/(?P<project_id>[0-9]+)/functions$', views.function_list),
+    url(r'^projects/(?P<project_id>[0-9]+)/functions/(?P<function_id>[0-9]+)$', views.function_detail),
+
     url(r'^(?P<scope>[a-z]+)/(?P<scope_id>[0-9]+)/requests$', views.request_list),
     url(r'^(?P<scope>[a-z]+)/(?P<scope_id>[0-9]+)/requests/(?P<request_id>[0-9]+)$', views.request_detail),
 

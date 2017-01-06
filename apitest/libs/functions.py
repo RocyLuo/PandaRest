@@ -44,7 +44,6 @@ def run(catalog_id):
                             skip = True
                         save_db_operation_log(report, path, result)
 
-
 def get_catalog_cases(catalog):
     """
     :param: catalog

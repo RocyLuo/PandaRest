@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="myApp">
 <head>
     <meta charset="UTF-8">
     <title>ApiTestFramework</title>
@@ -17,91 +17,19 @@
     <script src="{% static 'ui/popups/dist/angular-popups.js' %}"></script>
     <script src="{% static 'ui/ngDialog/js/ngDialog.min.js' %}"></script>
 </head>
-<body ng-app="myApp">
+<body>
 <div class="row">
-    <div class="col-md-3">
-        <ul class="module-tree">
 
+    <div class="col-md-3" ng-controller="functionCtrl">
+        {% verbatim %}
+        <ul>
+            Functions:
+            <li ng-repeat="func in functionList">{{func.name}} <span ng-click="openFunctionEditor(func)">edit</span> <span ng-click="deleteFunction(func)">delete</span></li>
+            <li ng-click="openFunctionEditor()">add Function</li>
         </ul>
+        {% endverbatim %}
     </div>
-    <div class="col-md-9">
-        <div class="form panel panel-default " style="display: none;">
-            <div class="panel-heading">
-                <form class="form-inline" role="form">
-                    <div class="form-group">
-                        <select id="method" class="form-control">
-                            <option value="get" selected="selected">GET</option>
-                            <option value="post">POST</option>
-                            <option value="put">PUT</option>
-                            <option value="delete">DELETE</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" class="form-control" id="url">
-                    </div>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <div class="input-group-addon">Status Code</div>
-                            <input id="expect_status" class="form-control" type="text">
-                        </div>
-                    </div>
-                    <button id="save" type="button" class="btn btn-primary">Save</button>
-                    <button id="delete" type="button" class="btn btn-danger">Delete</button>
-                </form>
-            </div>
 
-            <div class="panel-body">
-                <ul class="nav nav-tabs" role="tablist">
-                    <li role="presentation" name="headers" class="active"><a href="#">Headers</a></li>
-                    <li role="presentation" name="parameters"><a href="#">Parameters</a></li>
-                    <li role="presentation" name="body"><a href="#">Body</a></li>
-                    <li role="presentation" name="validation"><a href="#">Validation</a></li>
-                    <li role="presentation" name="extractor"><a href="#">Variable Extractor</a></li>
-                    <li role="presentation" name="repeat"><a href="#">Repeat</a></li>
-                </ul>
-                <table id="headers" class="table table-hover request-block">
-                    <tr>
-                        <td><input type="text" name="key" class="form-control" placeholder="key"></td>
-                        <td><input type="text" name="value" class="form-control" placeholder="value"></td>
-                    </tr>
-                </table>
-                <table id="parameters" style="display: none;" class="table table-hover request-block">
-                    <tr>
-                        <td><input type="text" name="key" class="form-control" placeholder="key"></td>
-                        <td><input type="text" name="value" class="form-control" placeholder="value"></td>
-                    </tr>
-                </table>
-                <div class="form-group">
-                    <textarea id="body" style="display: none;" class="form-control request-block" rows="8"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <textarea id="validation" style="display: none;" class="form-control request-block"
-                              rows="8"></textarea>
-                </div>
-                <table id="extractor" style="display: none;" class="table table-hover request-block">
-                    <tr>
-                        <td><input type="text" name="key" class="form-control" placeholder="variable name"></td>
-                        <td><input type="text" name="value" class="form-control" placeholder="variable path"></td>
-                    </tr>
-                </table>
-                <form id="repeat" style="display: none;" class="request-block form-inline" role="form">
-                    <div class="form-group">
-                        <div class="input-group">
-                            <div class="input-group-addon">Timeout</div>
-                            <input id="wait_timeout" class="form-control" type="text" value="0">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <div class="input-group-addon">Period</div>
-                            <input id="wait_period" class="form-control" type="text" value="0">
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 </div>
 
 <div class="row">
@@ -204,6 +132,7 @@
             </ul>
         </div>
     </div>
+
     {% verbatim %}
     <div class="col-md-9" ng-controller="operationCtrl">
         <div class="list-group">
@@ -347,6 +276,28 @@
                         </button>
                     </div>
                 </script>
+        <script type="text/ng-template" id="functionEditor">
+                    <div ng-show="!saveFlag" class="dialog-title">Add Function</div>
+                    <div ng-show="saveFlag" class="dialog-title">Update Function</div>
+                    <div class="dialog-contents">
+                        <input type="text" ng-model="currentFunction.id" hidden="true">
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" ng-model="currentFunction.desc" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Code</label>
+                            <textarea ng-model="currentFunction.code" class="form-control"
+                                      rows="4"></textarea>
+                        </div>
+                        <button ng-show="!saveFlag" ng-click="addFunction(currentFunction);closeThisDialog()"
+                                class="btn btn-primary">Save
+                        </button>
+                        <button ng-show="saveFlag" ng-click="updateFunction(currentFunction);closeThisDialog()"
+                                class="btn btn-primary">Update
+                        </button>
+                    </div>
+        </script>
     </div>
     {% endverbatim %}
 </div>
@@ -369,6 +320,7 @@ Array.prototype.remove = function(val) {
 };
 
 var app = angular.module('myApp', ['angular-popups','ngDialog']);
+
 app.factory('TreeData', function($q, $http,ngDialog) {
 
   function TreeData(cbIsSame) {
@@ -666,7 +618,6 @@ app.controller('treeData', function ($scope, $http, TreeData, ngDialog, Operatio
 app.controller('operationCtrl', function ($scope, $http, OperationList,ngDialog) {
   $scope.operationService = OperationList
   $scope.operations = $scope.operationService.list;
-
   $scope.openOperationEditor = function (operation) {
         $scope.saveFlag = true;
         if(typeof(operation)=="undefined"){
@@ -679,6 +630,56 @@ app.controller('operationCtrl', function ($scope, $http, OperationList,ngDialog)
 });
 
 
+app.controller('functionCtrl', function($scope, $http, ngDialog){
+    $scope.functionList = [];
+    $scope.projectId = {{project_id}};
+
+
+    $http.get("/apis/projects/"+$scope.projectId+"/functions").
+        then(function(response) {
+            $scope.functionList = response.data;
+    });
+
+    $scope.addFunction = function(func){
+        $http({
+                method: 'POST',
+                url: "/apis/projects/"+$scope.projectId+"/functions",
+                data: func
+                }).
+            then(function(response) {
+                $scope.functionList.push(response.data);
+        });
+    };
+    $scope.updateFunction = function(func){
+        $http({
+                method: 'PUT',
+                url: "/apis/projects/"+$scope.projectId+"/functions/"+func.id,
+                data: func
+                }).
+            then(function(response) {
+                alert("ok");
+        });
+    };
+    $scope.deleteFunction = function(func){
+        $http({
+                method: 'DELETE',
+                url: "/apis/projects/"+$scope.projectId+"/functions/"+func.id,
+                }).
+            then(function(response) {
+                $scope.functionList.remove(func);
+        });
+    };
+
+    $scope.openFunctionEditor = function(func){
+            $scope.saveFlag = true;
+            if(typeof(func)=="undefined"){
+                $scope.saveFlag = false;
+            }
+            $scope.currentFunction = func;
+            ngDialog.open({ template: 'functionEditor', className: 'ngdialog-theme-default',scope: $scope });
+    };
+
+});
 
 
 </script>

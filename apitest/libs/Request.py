@@ -2,7 +2,8 @@ import requests
 import re
 import json
 import time
-from customFunctions import *
+from ..models import *
+
 
 class Request:
 
@@ -51,8 +52,15 @@ class Request:
             self.params = json.loads(self.params)
             self.real_url = self.url+self._dict_to_param_str(self.params)
 
+    def _get_function_by_name(self, name):
+        code = Function.objects.get(name=name[0:name.find('(')]).code
+        code = code.replace('\r\n', ';')
+        return code
+
     def _exec_func(self, func):
         ret = None
+        code = self._get_function_by_name(func)
+        exec code
         exec "ret = " + func
         return str(ret)
 
@@ -121,6 +129,7 @@ class Request:
 
         def send_request():
             try:
+                print 'sending request'
                 response = requests.request(self.method, self.url, params=self.params, data=self.body,
                                             headers=self.header)
                 result["operation_result"] = {"status_code": response.status_code, "body": response.text}
