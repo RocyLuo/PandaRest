@@ -2,16 +2,24 @@
 import json
 
 data1 = "{a:1,b:2}"
-data2 = '{"a":1,"b":2}'
-data3 = '{}'
+data2 = '{"a":1,"b":2,"c":"ab"}'
+data3 = '{"param1":"qweqwe","param2":12323}'
 #json.loads(data1)
-print json.loads(data3)
+data = json.loads(data3)
+
+ff = '1.23'
+print float(ff)
 
 
-def test(var):
-    return var+100
-funcStr = "rest = test(100)"
+a = "fu123"
+print isinstance(data["param1"],(str,unicode))
+print type(data["param1"])
 
-exec funcStr
-print rest
+c = []
+c.append([3,2,3,4,])
+print c
+
+
+
+
 

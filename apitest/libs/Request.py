@@ -4,6 +4,16 @@ import json
 import time
 from ..models import *
 
+TEMP_VARS = {}
+
+
+def set_local_var(key, value):
+    TEMP_VARS[key] = value
+
+
+def clear_local_var(key):
+    del TEMP_VARS[key]
+
 
 class Request:
 
@@ -20,14 +30,13 @@ class Request:
         self.expected_body = operation.expected_body
         self.drive_data = operation.drive_data
         self.operation = operation
-        self.replace_variables()
 
 
     def _get_string_headers(self, operation):
-        return '{'+','.join(['"'+header.key+'":"'+header.value+'"' for header in operation.headers.all()])+'}'
+        return '{'+','.join(['"'+header.key+'":'+header.value+'' for header in operation.headers.all()])+'}'
 
     def _get_string_params(self, operation):
-        return '{' + ','.join(['"' + header.key + '":"' + header.value + '"' for header in operation.parameters.all()])+'}'
+        return '{' + ','.join(['"' + header.key + '":' + header.value + '' for header in operation.parameters.all()])+'}'
 
     def _remove_space(self,s):
         if not s is None:
@@ -43,25 +52,35 @@ class Request:
         self.params = self.get_variables(self.params)
         if not (self.body is None or self.body == ''):
             self.body = self.get_variables(self.body)
+            print self.body
+            self.body = json.loads(self.body)
 
         if not (self.header is None or self.header == ''):
             self.header = self.get_variables(self.header)
+            print self.header
             self.header = json.loads(self.header)
         if not (self.params is None or self.params == ''):
             self.params = self.get_variables(self.params)
+            print self.params
             self.params = json.loads(self.params)
             self.real_url = self.url+self._dict_to_param_str(self.params)
 
     def _get_function_by_name(self, name):
-        code = Function.objects.get(name=name[0:name.find('(')]).code
+        print 'function name:'+name;
+        print 'real name:'+name[0:name.find('(')]
+        code = Function.objects.get(name=name[0:name.find('(')].strip()).code
         code = code.replace('\r\n', ';')
+        print code
         return code
 
     def _exec_func(self, func):
         ret = None
+        func.strip()
         code = self._get_function_by_name(func)
         exec code
         exec "ret = " + func
+        if isinstance(ret,(str,unicode)):
+            ret = '"'+ret+'"'
         return str(ret)
 
     def get_variables(self, s):
@@ -69,10 +88,19 @@ class Request:
             key = matched.group()
             key = key.replace('{', '')
             key = key.replace('}', '')
-            for vars in self.variables:
-                for var in vars:
-                    if key == var.key:
-                        return var.value
+            if TEMP_VARS.has_key(key):
+                ret = TEMP_VARS[key]
+                if isinstance(ret, (str,unicode)):
+                    ret = '"'+ret+'"'
+                else:
+                    ret = str(ret)
+                print "tempRet"+ret
+                return ret
+            else:
+                for vars in self.variables:
+                    for var in vars:
+                        if key == var.key:
+                            return var.value
             return matched.group()
 
         def find_function(matched):
@@ -82,7 +110,7 @@ class Request:
             return self._exec_func(func)
 
         replaced_vars = re.sub(r'{{[0-9a-zA-Z]*}}', find_variable, s)
-        replaced_func = re.sub(r'{%.*%}', find_function, replaced_vars)
+        replaced_func = re.sub(r'{%.*?%}', find_function, replaced_vars)
         return replaced_func
 
     def _dict_to_param_str(self,params):
@@ -126,14 +154,17 @@ class Request:
         """
         result = {}
         result['operation_info'] = self.get_request_info()
-
+        result['operation_name'] = self.operation.name
+        self.replace_variables()
         def send_request():
             try:
                 print 'sending request'
+                result["operation_result"] = {}
                 response = requests.request(self.method, self.url, params=self.params, data=self.body,
                                             headers=self.header)
                 result["operation_result"] = {"status_code": response.status_code, "body": response.text}
                 self.process_response(response)
+
             except AssertionError, e:
                 result['assert_result'] = "Fail"
                 result['assert_info'] = str(e)

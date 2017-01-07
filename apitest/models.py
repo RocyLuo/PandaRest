@@ -29,6 +29,7 @@ class Catalog(models.Model):
 class Variable(models.Model):
 
     catalog = models.ForeignKey(Catalog, blank=True, null=True)
+    data_type = models.CharField(max_length=10, default='str')
     key = models.CharField(max_length=50)
     value = models.CharField(max_length=500)
 
@@ -96,6 +97,8 @@ class Header(models.Model):
 class Extractor(models.Model):
     requestOperation = models.ForeignKey(RequestOperation,related_name='extractors', blank=True, null=True)
     variable_name = models.CharField(max_length=50)
+    data_type = models.CharField(max_length=10, default='str')
+    level = models.CharField(max_length=50, default='temp')
     path = models.CharField(max_length=500)
 
     def __str__(self):
@@ -139,6 +142,7 @@ class OperationLog(models.Model):
     create_time = models.DateTimeField(auto_now=True)
     module_name = models.CharField(max_length=50)
     case_name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50,default='default')
     type = models.CharField(max_length=50)
     operation_info = models.TextField()
     operation_result = models.TextField(blank=True, null=True)

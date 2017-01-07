@@ -20,9 +20,9 @@
 <body>
 <div class="row">
 
-    <div class="col-md-3" ng-controller="functionCtrl">
+    <div class="col-md-3">
         {% verbatim %}
-        <ul>
+        <ul ng-controller="functionCtrl">
             Functions:
             <li ng-repeat="func in functionList">{{func.name}} <span ng-click="openFunctionEditor(func)">edit</span> <span ng-click="deleteFunction(func)">delete</span></li>
             <li ng-click="openFunctionEditor()">add Function</li>
@@ -72,6 +72,7 @@
                 <li ng-click="openModuleEditor()">
                     <label>Add Module</label>
                 </li>
+                <li><span ng-click="getOperations(project)">Templates</span></li>
                 <script type="text/ng-template" id="moduleEditor">
                     <div ng-show="!saveFlag" class="dialog-title">Add Module</div>
                     <div ng-show="saveFlag" class="dialog-title">Update Module</div>
@@ -139,6 +140,8 @@
             <div class="form panel panel-default" ng-repeat="operation in operations">
                 <div class="panel-heading" ng-click="showFlag=!showFlag">
                     Name:{{operation.name}}
+                    <button type="button" class="btn btn-primary" ng-click="operationService.update(operation)">Save</button>
+                        <button type="button" class="btn btn-danger" ng-click="operationService.delete(operation)">Delete</button>
                 </div>
 
                 <div class="panel-body" ng-show="showFlag">
@@ -160,24 +163,23 @@
                                 <input class="form-control" ng-model="operation.expect_status" type="text">
                             </div>
                         </div>
-                        <button type="button" class="btn btn-primary" ng-click="operationService.update(operation)">Save</button>
-                        <button type="button" class="btn btn-danger" ng-click="operationService.delete(operation)">Delete</button>
+
                     </form>
                     <ul class="nav nav-tabs" role="tablist">
                         <li role="presentation" name="headers" ng-click="switchVar='headers'"
-                            ng-class="{'active':switchVar=='headers'}"><a href="#">Headers</a></li>
+                            ng-class="{'active':switchVar=='headers'}"><a>Headers</a></li>
                         <li role="presentation" name="parameters" ng-click="switchVar='parameters'"
-                            ng-class="{'active':switchVar=='parameters'}"><a href="#">Parameters</a></li>
+                            ng-class="{'active':switchVar=='parameters'}"><a>Parameters</a></li>
                         <li role="presentation" name="body" ng-click="switchVar='body'"
-                            ng-class="{'active':switchVar=='body'}"><a href="#">Body</a></li>
+                            ng-class="{'active':switchVar=='body'}"><a>Body</a></li>
                         <li role="presentation" name="assert" ng-click="switchVar='assert'"
-                            ng-class="{'active':switchVar=='assert'}"><a href="#">Assert</a></li>
+                            ng-class="{'active':switchVar=='assert'}"><a>Assert</a></li>
                         <li role="presentation" name="expectedBody" ng-click="switchVar='expectedBody'"
-                            ng-class="{'active':switchVar=='expectedBody'}"><a href="#">Expected Body</a></li>
+                            ng-class="{'active':switchVar=='expectedBody'}"><a>Expected Body</a></li>
                         <li role="presentation" name="extractor" ng-click="switchVar='extractor'"
-                            ng-class="{'active':switchVar=='extractor'}"><a href="#">Variable Extractor</a></li>
+                            ng-class="{'active':switchVar=='extractor'}"><a>Variable Extractor</a></li>
                         <li role="presentation" name="repeat" ng-click="switchVar='repeat'"
-                            ng-class="{'active':switchVar=='repeat'}"><a href="#">Repeat</a></li>
+                            ng-class="{'active':switchVar=='repeat'}"><a>Repeat</a></li>
                     </ul>
                     <div ng-switch="switchVar">
                         <div ng-switch-default>
@@ -185,6 +187,7 @@
                                 <tr ng-repeat="header in operation.headers">
                                     <td><input type="text" ng-model="header.key" class="form-control" placeholder="key"></td>
                                     <td><input type="text" ng-model="header.value" class="form-control" placeholder="value"></td>
+                                    <td><span class="glyphicon glyphicon-minus" ng-click="operationService.deleteHeader(operation,header)"></span></td>
                                 </tr>
                             </table>
                             <span class="glyphicon glyphicon-plus" ng-click="operationService.addHeader(operation)"></span>
@@ -194,6 +197,7 @@
                                 <tr ng-repeat="parameter in operation.parameters">
                                     <td><input type="text" ng-model="parameter.key" class="form-control" placeholder="key"></td>
                                     <td><input type="text" ng-model="parameter.value" class="form-control" placeholder="value"></td>
+                                    <td><span class="glyphicon glyphicon-minus" ng-click="operationService.deleteParameters(operation,parameter)"></span></td>
                                 </tr>
                             </table>
                             <span class="glyphicon glyphicon-plus" ng-click="operationService.addParameter(operation)"></span>
@@ -268,7 +272,10 @@
                             <label>Skip Next</label>
                             <input type="text" ng-model="currentOperation.skip_next" class="form-control">
                         </div>
-                        <button ng-show="!saveFlag" ng-click="operationService.add(currentOperation);closeThisDialog()"
+                        <select class="form-control" ng-model="selectedTemplate">
+                                <option ng-repeat="template in templates " ng-value="template">{{template.name}}</option>
+                        </select>
+                        <button ng-show="!saveFlag" ng-click="operationService.add(currentOperation,selectedTemplate);closeThisDialog()"
                                 class="btn btn-primary">Save
                         </button>
                         <button ng-show="saveFlag" ng-click="updateOperation(currentOperation);closeThisDialog()"
@@ -446,7 +453,7 @@ app.service('OperationList', function($q, $http) {
         });
     };
 
-    this.add = function(operation){
+    this.add = function(operation, template){
           $http({
                 method: 'POST',
                 url: "/apis/cases/"+self.testCase.id+"/requests",
@@ -454,6 +461,14 @@ app.service('OperationList', function($q, $http) {
                 }).
             then(function(response) {
                 self.list.push(response.data);
+                if(typeof(template)!="undefined"){
+                       template.name = response.data.name;
+                       template.desc = response.data.desc;
+                       template.catalog = response.data.catalog;
+                       template.id = response.data.id;
+                       self.list[self.list.length-1] = template;
+                       self.update(template);
+                }
             });
     };
 
@@ -481,6 +496,14 @@ app.service('OperationList', function($q, $http) {
         operation.headers.push({key:'',value:''});
     };
 
+    this.deleteHeader = function(operation,header){
+        operation.headers.remove(header);
+    };
+
+    this.deleteParameters = function(operation,parameter){
+        operation.parameters.remove(parameter);
+    };
+
     this.addParameter = function(operation){
         operation.parameters.push({key:'',value:''});
     };
@@ -494,7 +517,8 @@ app.service('OperationList', function($q, $http) {
 app.controller('treeData', function ($scope, $http, TreeData, ngDialog, OperationList) {
   var vm = $scope.vm = {};
   vm.tree = new TreeData();
-
+  var projectId = {{project_id}};
+  $scope.project = {id:projectId}
   vm.tree.init().then(function(ret){
     vm.navData = ret;
   });
@@ -618,6 +642,7 @@ app.controller('treeData', function ($scope, $http, TreeData, ngDialog, Operatio
 app.controller('operationCtrl', function ($scope, $http, OperationList,ngDialog) {
   $scope.operationService = OperationList
   $scope.operations = $scope.operationService.list;
+  $scope.projectId = {{project_id}};
   $scope.openOperationEditor = function (operation) {
         $scope.saveFlag = true;
         if(typeof(operation)=="undefined"){
@@ -625,7 +650,14 @@ app.controller('operationCtrl', function ($scope, $http, OperationList,ngDialog)
         }
         $scope.currentOperation = operation;
         ngDialog.open({ template: 'operationEditor', className: 'ngdialog-theme-default',scope: $scope });
-    };
+  };
+
+  $scope.templates = [];
+  $scope.selectedTemplate = undefined;
+  $http.get("/apis/projects/"+$scope.projectId+"/requests").
+        then(function(response) {
+            $scope.templates = response.data
+  });
 
 });
 

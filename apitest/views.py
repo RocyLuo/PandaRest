@@ -227,7 +227,7 @@ def request_list(request, scope, scope_id):
     """
     List all code catalogs, or create a new catalog.
     """
-    scope_list = ['templates', 'cases']
+    scope_list = ['projects', 'cases']
     if scope in scope_list:
         scope = scope[0:-1].capitalize()
         try:
@@ -261,7 +261,7 @@ def request_detail(request, scope, scope_id, request_id):
     """
     Retrieve, update or delete a code catalog.
     """
-    scope_list = ['templates', 'cases']
+    scope_list = ['projects', 'cases']
     if scope in scope_list:
         scope = scope[0:-1].capitalize()
         try:
@@ -341,7 +341,7 @@ def project_detail(request, pk):
 
 @csrf_exempt
 def report_list(request, project_id):
-    reports = Report.objects.all().filter(project_id=project_id).order_by('start_time')
+    reports = Report.objects.all().filter(project_id=project_id).order_by('-start_time')
     if request.method == 'GET':
         serializer = ReportSerializer(reports, many=True)
         return JSONResponse(serializer.data)
@@ -365,10 +365,37 @@ def report_detail(request, project_id, report_id):
                 ]
     """
 
-    operation_logs = OperationLog.objects.all().filter(report__id=report_id)
+
     if request.method == 'GET':
-        serializer = OperationLogSerializer(operation_logs, many=True)
-        return JSONResponse(serializer.data)
+        ret = {}
+        ret['cases'] = []
+        ret['pass'] = 0
+        ret['fail'] = 0
+        ret['error'] = 0
+        cases = OperationLog.objects.filter(report__id=report_id).values("case_name").distinct()
+        ret['total'] = len(cases)
+        for case in cases:
+            operation_logs = OperationLog.objects.all().filter(report__id=report_id, case_name=case['case_name'])
+            case_result = 'Pass'
+            for log in operation_logs:
+                if log.assert_result == 'Error':
+                    case_result = 'Error'
+                    ret['error'] +=1
+                    break
+                if log.assert_result == 'Fail':
+                    case_result = 'Fail'
+                    ret['fail'] += 1
+                    
+            if case_result == 'Pass':
+                ret['pass'] += 1
+            serializer = OperationLogSerializer(operation_logs, many=True)
+            case_ret = {}
+            case_ret['name'] = case['case_name']
+            case_ret['logs'] = serializer.data
+            case_ret['result'] = case_result
+            ret['cases'].append(case_ret)
+
+        return JSONResponse(ret)
 
 
 def test(request, pk):

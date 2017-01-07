@@ -125,6 +125,7 @@ def save_request_operation_log(report, path, request_result):
     operation_log.type = 'request'
     operation_log.case_name = path[0].name
     operation_log.module_name = path[1].name
+    operation_log.name = request_result["operation_name"]
     operation_log.operation_info = request_result["operation_info"]
     operation_log.operation_result = request_result["operation_result"]
     operation_log.assert_result = request_result["assert_result"]

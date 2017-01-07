@@ -15,7 +15,7 @@
 <div class="row" ng-controller="reportCtrl">
         <div class="col-md-3">
             <ul>
-                <li ng-repeat="report in reports" ng-click="getLogs(report)">{{report.start_time}}</li>
+                <li ng-repeat="report in reports" ng-click="getResult(report)">{{report.start_time}}</li>
             </ul>
         </div>
 
@@ -61,6 +61,45 @@
                 </tbody>
 
             </table>
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Pass:{{result.pass}} Fail:{{result.fail}} Error:{{result.error}}</h3>
+              </div>
+              <div class="panel-body">
+                <ul>
+                    <li ng-repeat="case in result.cases">
+                        <label ng-click="showFlag=!showFlag">{{case.name}} <span class="label" ng-class="{'label-success':case.result=='Pass','label-warning':case.result=='Fail','label-danger':case.result=='Error'}">{{case.result}}</span></label>
+                        <ul ng-show="showFlag">
+                            <li ng-repeat="log in case.logs">
+                                <label ng-click="logShowFlag=!logShowFlag">{{log.name}} <span class="label" ng-class="{'label-default':log.assert_result=='Skip','label-success':log.assert_result=='Pass','label-warning':log.assert_result=='Fail','label-danger':log.assert_result=='Error'}">{{log.assert_result}}</span>Type:{{log.type}}</label>
+                                <table class="table table-hover" ng-show="logShowFlag">
+                                    <tbody>
+                                    <tr>
+                                        <td>Time</td>
+                                        <td>{{log.create_time}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Info</td>
+                                        <td>{{log.operation_info}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Result</td>
+                                        <td>{{log.operation_result}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Assert Info</td>
+                                        <td>{{log.assert_info}}</td>
+                                    </tr>
+                                    </tbody>
+
+                                </table>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+              </div>
+            </div>
+
         </div>
 </div>
 {% endverbatim %}
@@ -72,16 +111,16 @@ var app = angular.module('myApp', []);
 app.controller('reportCtrl', function ($scope, $http) {
     $scope.projectId = {{project_id}};
     $scope.reports = []
-    $scope.logs = []
+    $scope.result = {}
     $http.get("/apis/projects/"+$scope.projectId+"/reports").
         then(function(response) {
             $scope.reports = response.data;
     });
 
-    $scope.getLogs = function(report){
+    $scope.getResult = function(report){
         $http.get("/apis/projects/"+$scope.projectId+"/reports/"+report.id).
         then(function(response) {
-            $scope.logs = response.data;
+            $scope.result = response.data;
         });
     };
 });
