@@ -18,24 +18,11 @@
     <script src="{% static 'ui/ngDialog/js/ngDialog.min.js' %}"></script>
 </head>
 <body>
-<div class="row">
 
+<div class="row">
     <div class="col-md-3">
         {% verbatim %}
-        <ul ng-controller="functionCtrl">
-            Functions:
-            <li ng-repeat="func in functionList">{{func.name}} <span ng-click="openFunctionEditor(func)">edit</span> <span ng-click="deleteFunction(func)">delete</span></li>
-            <li ng-click="openFunctionEditor()">add Function</li>
-        </ul>
-        {% endverbatim %}
-    </div>
-
-</div>
-
-<div class="row">
-    <div class="col-md-3" ng-controller="treeData">
-        {% verbatim %}
-        <div class="tree">
+        <div class="tree" ng-controller="treeData">
             <ul>
                 <li ng-repeat="module in vm.navData" ng-class="{closed:vm.tree.isFolded(module)}">
                     <div>
@@ -68,11 +55,10 @@
                         </li>
                     </ul>
                 </li>
-                {% endverbatim %}
                 <li ng-click="openModuleEditor()">
                     <label>Add Module</label>
                 </li>
-                <li><span ng-click="getOperations(project)">Templates</span></li>
+                <li><span ng-click="getOperations(project)"><label>Templates</label></span></li>
                 <script type="text/ng-template" id="moduleEditor">
                     <div ng-show="!saveFlag" class="dialog-title">Add Module</div>
                     <div ng-show="saveFlag" class="dialog-title">Update Module</div>
@@ -99,7 +85,6 @@
                         </button>
                     </div>
                 </script>
-
                 <script type="text/ng-template" id="caseEditor">
                     <div ng-show="!saveFlag" class="dialog-title">Add Case</div>
                     <div ng-show="saveFlag" class="dialog-title">Update Case</div>
@@ -129,19 +114,25 @@
                         </button>
                     </div>
                 </script>
-
             </ul>
         </div>
+        <ul ng-controller="functionCtrl">
+            <label>Functions</label>
+            <li ng-repeat="func in functionList">{{func.name}} <span ng-click="openFunctionEditor(func)">edit</span> <span ng-click="deleteFunction(func)">delete</span></li>
+            <li ng-click="openFunctionEditor()">add Function</li>
+        </ul>
+        {% endverbatim %}
     </div>
 
     {% verbatim %}
     <div class="col-md-9" ng-controller="operationCtrl">
         <div class="list-group">
             <div class="form panel panel-default" ng-repeat="operation in operations">
-                <div class="panel-heading" ng-click="showFlag=!showFlag">
+                <div class="panel-heading">
                     Name:{{operation.name}}
                     <button type="button" class="btn btn-primary" ng-click="operationService.update(operation)">Save</button>
-                        <button type="button" class="btn btn-danger" ng-click="operationService.delete(operation)">Delete</button>
+                    <button type="button" class="btn btn-danger" ng-click="operationService.delete(operation)">Delete</button>
+                    <span ng-click="showFlag=!showFlag" class="glyphicon glyphicon-resize-vertical"></span>
                 </div>
 
                 <div class="panel-body" ng-show="showFlag">

@@ -131,6 +131,7 @@ app.controller('reportCtrl', function ($scope, $http, $interval) {
     $scope.getResult = function(report){
         $interval.cancel($scope.refreshPromise);
         $scope.currentReport = report;
+        $scope.refresh();
         $scope.refreshPromise = $interval($scope.refresh,1000);
     };
 });
