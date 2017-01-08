@@ -155,7 +155,14 @@ class Request:
         result = {}
         result['operation_info'] = self.get_request_info()
         result['operation_name'] = self.operation.name
-        self.replace_variables()
+        result["operation_result"] = {}
+        try:
+            self.replace_variables()
+        except Exception, e:
+            result['assert_result'] = "Error"
+            result['assert_info'] = str(e)
+            yield result
+
         def send_request():
             try:
                 print 'sending request'

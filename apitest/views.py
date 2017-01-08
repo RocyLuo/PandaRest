@@ -368,12 +368,16 @@ def report_detail(request, project_id, report_id):
 
     if request.method == 'GET':
         ret = {}
+        report = Report.objects.get(pk=report_id)
         ret['cases'] = []
-        ret['pass'] = 0
-        ret['fail'] = 0
-        ret['error'] = 0
+        ret['pass'] = report.case_pass
+        ret['fail'] = report.case_fail
+        ret['error'] = report.case_error
+        ret['total'] = report.case_total
+        ret['status'] = report.status
+
         cases = OperationLog.objects.filter(report__id=report_id).values("case_name").distinct()
-        ret['total'] = len(cases)
+
         for case in cases:
             operation_logs = OperationLog.objects.all().filter(report__id=report_id, case_name=case['case_name'])
             case_result = 'Pass'
@@ -385,7 +389,7 @@ def report_detail(request, project_id, report_id):
                 if log.assert_result == 'Fail':
                     case_result = 'Fail'
                     ret['fail'] += 1
-                    
+
             if case_result == 'Pass':
                 ret['pass'] += 1
             serializer = OperationLogSerializer(operation_logs, many=True)
@@ -399,11 +403,13 @@ def report_detail(request, project_id, report_id):
 
 
 def test(request, pk):
-    try:
-        Catalog.objects.get(pk=pk)
-    except Catalog.DoesNotExist:
-        return HttpResponse(status=404)
+    if request.method == 'GET':
+        try:
+            Catalog.objects.get(pk=pk)
+        except Catalog.DoesNotExist:
+            return HttpResponse(status=404)
 
-    run(pk)
+        task = Runner(pk,str(pk))
+        task.start()
 
-    return HttpResponse(status=200)
+        return HttpResponse(status=200)

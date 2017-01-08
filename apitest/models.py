@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from django.db import models
+from datetime import datetime
 
 
 class Catalog(models.Model):
@@ -67,7 +68,7 @@ class RequestOperation(models.Model):
     test_code = models.TextField(blank=True, null=True)
     expected_body = models.TextField(blank=True, null=True)
     priority = models.SmallIntegerField(default=1)
-    skip_next = models.SmallIntegerField(default=0)
+    skip_next = models.SmallIntegerField(default=1)
     wait_timeout = models.SmallIntegerField(default=0)
     wait_period = models.SmallIntegerField(default=0)
     drive_data = models.TextField(default="",blank=True, null=True)
@@ -119,10 +120,11 @@ class DBOperation(models.Model):
 
 class Report(models.Model):
 
-    start_time = models.DateTimeField(auto_now=True)
+    start_time = models.DateTimeField(default=datetime.now())
     end_time = models.DateTimeField(blank=True, null=True)
     project_id = models.IntegerField()
     project_name = models.CharField(max_length=50)
+    status = models.CharField(max_length=10, default='running')
     case_total = models.SmallIntegerField(default=0, blank=True, null=True)
     case_pass = models.SmallIntegerField(default=0, blank=True, null=True)
     case_fail = models.SmallIntegerField(default=0, blank=True, null=True)

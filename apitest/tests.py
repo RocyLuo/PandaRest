@@ -19,6 +19,11 @@ c = []
 c.append([3,2,3,4,])
 print c
 
+from datetime import datetime
+print datetime.now()
+
+ttt = ['pass','error','fail']
+print 'error' in ttt
 
 
 

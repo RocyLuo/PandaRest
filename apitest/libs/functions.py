@@ -5,6 +5,57 @@
 from ..models import *
 from Request import Request
 from Database import *
+from datetime import datetime
+import threading
+
+
+class Runner(threading.Thread):
+    def __init__(self, catalog_id, thread_name):
+        super(Runner, self).__init__(name=thread_name)
+        self.catalog_id = catalog_id
+
+    def run(self):
+        """
+            :param catalog_id:
+            :return: None
+            """
+        # it is the most complicated core logic function
+        # so, get a couple of coffee
+        print 'start running'
+        catalog = Catalog.objects.get(pk=self.catalog_id)
+        cases = get_catalog_cases(catalog)
+        project = get_catalog_project(catalog)
+        report = create_report(project, cases)
+        print 'got ' + str(len(cases)) + ' cases'
+        for case in cases:
+            case_results = []
+            skip = False
+            path = get_case_path(case)
+            variables = get_case_variables(case)
+            operations = get_case_operations(case)
+            repeat = case.repeat
+            print 'start running a case'
+            while repeat > 0:
+                repeat -= 1
+                for operation in operations:
+                    if isinstance(operation, RequestOperation):
+                        request = Request(operation, variables)
+                        for result in request.excute(skip):
+                            print str(result)
+                            case_results.append(result['assert_result'])
+                            if operation.skip_next == 1 and not result["assert_result"] == "Pass":
+                                skip = True
+                            save_request_operation_log(report, path, result)
+                    if isinstance(operation, DBOperation):
+                        db = Database(operation, variables)
+                        for result in db.excute(skip):
+                            if operation.skip_next == 1 and not result["assert_result"] == "Pass":
+                                skip = True
+                            save_db_operation_log(report, path, result)
+            update_report(report, case_results)
+        report.end_time = datetime.now()
+        report.status = 'finished'
+        report.save()
 
 
 def run(catalog_id):
@@ -43,6 +94,7 @@ def run(catalog_id):
                         if operation.skip_next == 1 and not result["assert_result"] == "Pass":
                             skip = True
                         save_db_operation_log(report, path, result)
+
 
 def get_catalog_cases(catalog):
     """
@@ -151,6 +203,7 @@ def create_report(project, cases):
     :return: report
     """
     report = Report()
+    report.start_time = datetime.now()
     report.project_id = project.id
     report.project_name = project.name
     report.case_total = len(cases)
@@ -160,6 +213,24 @@ def create_report(project, cases):
     report.case_skip = 0
     report.save()
     return report
+
+def get_case_result(case_results):
+    if 'Error' in case_results:
+        return 'Error'
+    elif 'Fail' in case_results:
+        return 'Fail'
+    else:
+        return 'Pass'
+
+def update_report(report, case_results):
+    case_result = get_case_result(case_results)
+    if case_result == 'Pass':
+        report.case_pass +=1
+    if case_result == 'Fail':
+        report.case_fail += 1
+    if case_result == 'Error':
+        report.case_error += 1
+    report.save()
 
 
 def update_report_result(report):

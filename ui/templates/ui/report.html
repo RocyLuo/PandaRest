@@ -63,13 +63,13 @@
             </table>
             <div class="panel panel-default">
               <div class="panel-heading">
-                <h3 class="panel-title">Pass:{{result.pass}} Fail:{{result.fail}} Error:{{result.error}}</h3>
+                <h3 class="panel-title">Pass:{{result.pass}} Fail:{{result.fail}} Error:{{result.error}}Status:{{result.status}}</h3>
               </div>
               <div class="panel-body">
                 <ul>
                     <li ng-repeat="case in result.cases">
                         <label ng-click="showFlag=!showFlag">{{case.name}} <span class="label" ng-class="{'label-success':case.result=='Pass','label-warning':case.result=='Fail','label-danger':case.result=='Error'}">{{case.result}}</span></label>
-                        <ul ng-show="showFlag">
+                        <ul ng-hide="showFlag">
                             <li ng-repeat="log in case.logs">
                                 <label ng-click="logShowFlag=!logShowFlag">{{log.name}} <span class="label" ng-class="{'label-default':log.assert_result=='Skip','label-success':log.assert_result=='Pass','label-warning':log.assert_result=='Fail','label-danger':log.assert_result=='Error'}">{{log.assert_result}}</span>Type:{{log.type}}</label>
                                 <table class="table table-hover" ng-show="logShowFlag">
@@ -108,20 +108,30 @@
 
 <script>
 var app = angular.module('myApp', []);
-app.controller('reportCtrl', function ($scope, $http) {
+app.controller('reportCtrl', function ($scope, $http, $interval) {
     $scope.projectId = {{project_id}};
-    $scope.reports = []
-    $scope.result = {}
+    $scope.reports = [];
+    $scope.result = {};
+
     $http.get("/apis/projects/"+$scope.projectId+"/reports").
         then(function(response) {
             $scope.reports = response.data;
     });
 
-    $scope.getResult = function(report){
-        $http.get("/apis/projects/"+$scope.projectId+"/reports/"+report.id).
-        then(function(response) {
-            $scope.result = response.data;
+    $scope.refresh = function(){
+        $http.get("/apis/projects/"+$scope.projectId+"/reports/"+$scope.currentReport.id).
+                then(function(response) {
+                    $scope.result = response.data;
+                    if($scope.result.status == 'finished'){
+                        $interval.cancel($scope.refreshPromise);
+                    }
         });
+    };
+
+    $scope.getResult = function(report){
+        $interval.cancel($scope.refreshPromise);
+        $scope.currentReport = report;
+        $scope.refreshPromise = $interval($scope.refresh,1000);
     };
 });
 </script>
