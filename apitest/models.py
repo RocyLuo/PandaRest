@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from django.db import models
 from datetime import datetime
-
+from django.utils.timezone import now
 
 class Catalog(models.Model):
 
@@ -120,7 +120,7 @@ class DBOperation(models.Model):
 
 class Report(models.Model):
 
-    start_time = models.DateTimeField(default=datetime.now())
+    start_time = models.DateTimeField()
     end_time = models.DateTimeField(blank=True, null=True)
     project_id = models.IntegerField()
     project_name = models.CharField(max_length=50)

@@ -41,13 +41,14 @@ class Request:
     def _remove_space(self,s):
         if not s is None:
             s = s.replace('\n', '')
-            s = s.replace(' ', '')
+            #s = s.replace(' ', '')
         return s
 
     def replace_variables(self):
         self.header = self.get_variables(self.header)
         self.url = self.get_variables(self.url)
-        self.real_url = self.url
+        self.real_url = self.url.replace("'", '')
+        self.url = self.real_url
 
         self.params = self.get_variables(self.params)
         if not (self.body is None or self.body == ''):
@@ -55,11 +56,11 @@ class Request:
             print self.body
             self.body = json.loads(self.body)
 
-        if not (self.header is None or self.header == ''):
+        if not (self.header is None):
             self.header = self.get_variables(self.header)
             print self.header
             self.header = json.loads(self.header)
-        if not (self.params is None or self.params == ''):
+        if not (self.params is None or self.params == '{}'):
             self.params = self.get_variables(self.params)
             print self.params
             self.params = json.loads(self.params)
@@ -156,19 +157,24 @@ class Request:
         result['operation_info'] = self.get_request_info()
         result['operation_name'] = self.operation.name
         result["operation_result"] = {}
-        try:
-            self.replace_variables()
-        except Exception, e:
-            result['assert_result'] = "Error"
-            result['assert_info'] = str(e)
-            yield result
-
+        self.replace_variables()
+        result['operation_info'] = self.get_request_info()
+        # try:
+        #     self.replace_variables()
+        #     result['operation_info'] = self.get_request_info()
+        # except Exception, e:
+        #     result['assert_result'] = "Error"
+        #     result['assert_info'] = str(e)
+        #     yield result
+        #response = requests.request(self.method, self.url, params=self.params, data=self.body,headers=self.header)
         def send_request():
             try:
                 print 'sending request'
                 result["operation_result"] = {}
                 response = requests.request(self.method, self.url, params=self.params, data=self.body,
                                             headers=self.header)
+                print 'Get Response==========:'
+                print response.text
                 result["operation_result"] = {"status_code": response.status_code, "body": response.text}
                 self.process_response(response)
 
