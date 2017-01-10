@@ -16,7 +16,7 @@ urlpatterns = [
     # url(r'^cases/$', views.case_post),
     # url(r'^cases/(?P<case_pk>[0-9]+)/$', views.case_detail),
 
-    url(r'^test/(?P<pk>[0-9]+)$', views.test),
+    url(r'^run/(?P<pk>[0-9]+)$', views.run),
 
     url(r'^(?P<scope>[a-z]+)/(?P<scope_id>[0-9]+)/variables$', views.var_list),
     url(r'^(?P<scope>[a-z]+)/(?P<scope_id>[0-9]+)/variables/(?P<var_id>[0-9]+)$', views.var_detail),

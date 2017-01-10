@@ -13,6 +13,12 @@ class Runner(threading.Thread):
     def __init__(self, catalog_id, thread_name):
         super(Runner, self).__init__(name=thread_name)
         self.catalog_id = catalog_id
+        print 'start running'
+        self.catalog = Catalog.objects.get(pk=self.catalog_id)
+        self.cases = get_catalog_cases(self.catalog)
+        self.project = get_catalog_project(self.catalog)
+        self.report = create_report(self.project, self.cases)
+        print 'got ' + str(len(self.cases)) + ' cases'
 
     def run(self):
         """
@@ -21,13 +27,8 @@ class Runner(threading.Thread):
             """
         # it is the most complicated core logic function
         # so, get a couple of coffee
-        print 'start running'
-        catalog = Catalog.objects.get(pk=self.catalog_id)
-        cases = get_catalog_cases(catalog)
-        project = get_catalog_project(catalog)
-        report = create_report(project, cases)
-        print 'got ' + str(len(cases)) + ' cases'
-        for case in cases:
+
+        for case in self.cases:
             case_results = []
             skip = False
             path = get_case_path(case)
@@ -45,17 +46,17 @@ class Runner(threading.Thread):
                             case_results.append(result['assert_result'])
                             if operation.skip_next == 1 and not result["assert_result"] == "Pass":
                                 skip = True
-                            save_request_operation_log(report, path, result)
+                            save_request_operation_log(self.report, path, result)
                     if isinstance(operation, DBOperation):
                         db = Database(operation, variables)
                         for result in db.excute(skip):
                             if operation.skip_next == 1 and not result["assert_result"] == "Pass":
                                 skip = True
-                            save_db_operation_log(report, path, result)
-            update_report(report, case_results)
-        report.end_time = datetime.now()
-        report.status = 'finished'
-        report.save()
+                            save_db_operation_log(self.report, path, result)
+            update_report(self.report, case_results)
+        self.report.end_time = datetime.now()
+        self.report.status = 'finished'
+        self.report.save()
 
 
 def run(catalog_id):

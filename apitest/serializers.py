@@ -2,16 +2,35 @@ from rest_framework import serializers
 from models import *
 
 
-class CatalogSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Catalog
-        fields = ('id', 'parent', 'name', 'desc', 'status', 'type', 'repeat', 'create_time', 'priority')
-
-
 class VariableSerializer(serializers.ModelSerializer):
     class Meta:
         model = Variable
-        fields = ('id', 'catalog', 'key', 'value')
+        fields = ('key', 'value')
+
+
+class CatalogSerializer(serializers.ModelSerializer):
+    variables = VariableSerializer(many=True, required=False)
+
+    class Meta:
+        model = Catalog
+        fields = '__all__'
+        #fields = ('id', 'parent', 'name', 'desc', 'status', 'type', 'repeat', 'create_time', 'priority')
+
+    def update(self, instance, validated_data):
+
+        instance.name = validated_data.get('name', instance.name)
+        instance.desc = validated_data.get('desc', instance.desc)
+        instance.repeat = validated_data.get('repeat', instance.repeat)
+        instance.priority = validated_data.get('body', instance.priority)
+
+        variables_data = validated_data.pop('variables')
+        Variable.objects.filter(catalog=instance).delete()
+
+        for variable_data in variables_data:
+            Variable.objects.create(catalog=instance, **variable_data)
+
+        instance.save()
+        return instance
 
 
 class ParameterSerializer(serializers.ModelSerializer):

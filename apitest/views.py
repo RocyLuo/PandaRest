@@ -402,7 +402,7 @@ def report_detail(request, project_id, report_id):
         return JSONResponse(ret)
 
 
-def test(request, pk):
+def run(request, pk):
     if request.method == 'GET':
         try:
             Catalog.objects.get(pk=pk)
@@ -410,6 +410,7 @@ def test(request, pk):
             return HttpResponse(status=404)
 
         task = Runner(pk,str(pk))
+        report = task.report
         task.start()
-
-        return HttpResponse(status=200)
+        serializer = ReportSerializer(report)
+        return JSONResponse(serializer.data)

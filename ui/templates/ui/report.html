@@ -20,47 +20,6 @@
         </div>
 
         <div class="col-md-9">
-            <table class="table table-hover" ng-repeat="log in logs">
-                <thead ng-click="showFlag=!showFlag">
-                    <td>Assert Result</td>
-                    <td>{{log.assert_result}}</td>
-                </thead>
-                <tbody ng-show="showFlag">
-                <tr>
-                    <td>Time</td>
-                    <td>{{log.create_time}}</td>
-                </tr>
-                <tr>
-                    <td>Module</td>
-                    <td>{{log.module_name}}</td>
-                </tr>
-                <tr>
-                    <td>Case</td>
-                    <td>{{log.case_name}}</td>
-                </tr>
-                <tr>
-                    <td>Type</td>
-                    <td>{{log.type}}</td>
-                </tr>
-                <tr>
-                    <td>Info</td>
-                    <td>{{log.operation_info}}</td>
-                </tr>
-                <tr>
-                    <td>Result</td>
-                    <td>{{log.operation_result}}</td>
-                </tr>
-                <tr>
-                    <td>Assert Result</td>
-                    <td>{{log.assert_result}}</td>
-                </tr>
-                <tr>
-                    <td>Assert Info</td>
-                    <td>{{log.assert_info}}</td>
-                </tr>
-                </tbody>
-
-            </table>
             <div class="panel panel-default">
               <div class="panel-heading">
                 <h3 class="panel-title">Pass:{{result.pass}} Fail:{{result.fail}} Error:{{result.error}}Status:{{result.status}}</h3>

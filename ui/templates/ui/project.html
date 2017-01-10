@@ -59,6 +59,7 @@
                     <label>Add Module</label>
                 </li>
                 <li><span ng-click="getOperations(project)"><label>Templates</label></span></li>
+                <li><label ng-click="openVariableEditor()">Variables</label></li>
                 <script type="text/ng-template" id="moduleEditor">
                     <div ng-show="!saveFlag" class="dialog-title">Add Module</div>
                     <div ng-show="saveFlag" class="dialog-title">Update Module</div>
@@ -245,6 +246,46 @@
                 </div>
             </div>
         </div>
+        <button ng-click="runCase()">Run This Case</button>
+        <button ng-click="runProject()">Run Project</button>
+        <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Pass:{{result.pass}} Fail:{{result.fail}} Error:{{result.error}}Status:{{result.status}}</h3>
+              </div>
+              <div class="panel-body">
+                <ul>
+                    <li ng-repeat="case in result.cases">
+                        <label ng-click="showFlag=!showFlag">{{case.name}} <span class="label" ng-class="{'label-success':case.result=='Pass','label-warning':case.result=='Fail','label-danger':case.result=='Error'}">{{case.result}}</span></label>
+                        <ul ng-hide="showFlag">
+                            <li ng-repeat="log in case.logs">
+                                <label ng-click="logShowFlag=!logShowFlag">{{log.name}} <span class="label" ng-class="{'label-default':log.assert_result=='Skip','label-success':log.assert_result=='Pass','label-warning':log.assert_result=='Fail','label-danger':log.assert_result=='Error'}">{{log.assert_result}}</span>Type:{{log.type}}</label>
+                                <table class="table table-hover" ng-show="logShowFlag">
+                                    <tbody>
+                                    <tr>
+                                        <td>Time</td>
+                                        <td>{{log.create_time}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Info</td>
+                                        <td>{{log.operation_info}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Result</td>
+                                        <td>{{log.operation_result}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Assert Info</td>
+                                        <td>{{log.assert_info}}</td>
+                                    </tr>
+                                    </tbody>
+
+                                </table>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+              </div>
+            </div>
         <script type="text/ng-template" id="operationEditor">
                     <div ng-show="!saveFlag" class="dialog-title">Add Operation</div>
                     <div ng-show="saveFlag" class="dialog-title">Update Operation</div>
@@ -292,6 +333,22 @@
                                 class="btn btn-primary">Save
                         </button>
                         <button ng-show="saveFlag" ng-click="updateFunction(currentFunction);closeThisDialog()"
+                                class="btn btn-primary">Update
+                        </button>
+                    </div>
+        </script>
+        <script type="text/ng-template" id="variableEditor">
+                    <div class="dialog-title">Update Variable</div>
+                    <div class="dialog-contents">
+                        <table class="table table-hover">
+                                <tr ng-repeat="variable in project.variables">
+                                    <td><input type="text" ng-model="variable.key" class="form-control" placeholder="key"></td>
+                                    <td><input type="text" ng-model="variable.value" class="form-control" placeholder="value"></td>
+                                    <td><span class="glyphicon glyphicon-minus" ng-click="deleteVariable(variable)"></span></td>
+                                </tr>
+                            </table>
+                        <span class="glyphicon glyphicon-plus" ng-click="addVariable()"></span>
+                        <button ng-click="updateVariables();closeThisDialog()"
                                 class="btn btn-primary">Update
                         </button>
                     </div>
@@ -433,6 +490,7 @@ app.service('OperationList', function($q, $http) {
     this.fuck = "default";
     this.list = [];
     this.testCase = {};
+    this.report = {};
     this.initList = function(testCase) {
         self.testCase = testCase;
         $http.get("/apis/cases/"+testCase.id+"/requests").
@@ -509,7 +567,36 @@ app.controller('treeData', function ($scope, $http, TreeData, ngDialog, Operatio
   var vm = $scope.vm = {};
   vm.tree = new TreeData();
   var projectId = {{project_id}};
-  $scope.project = {id:projectId}
+  $scope.project = {id:projectId};
+
+  $http.get("/apis/projects/"+projectId).
+        then(function(response) {
+            $scope.project = response.data;
+  });
+
+  $scope.openVariableEditor = function () {
+        ngDialog.open({ template: 'variableEditor', className: 'ngdialog-theme-default',scope: $scope });
+  };
+
+  $scope.addVariable = function(){
+        $scope.project.variables.push({key:"", value:""});
+  };
+
+  $scope.deleteVariable = function (variable){
+        $scope.project.variables.remove(variable);
+  };
+
+  $scope.updateVariables = function (){
+        $http({
+            method: 'PUT',
+            url: "/apis/projects/"+$scope.project.id,
+            data: $scope.project
+            }).
+        then(function(response) {
+            $scope.project = response.data;
+        });
+  };
+
   vm.tree.init().then(function(ret){
     vm.navData = ret;
   });
@@ -630,7 +717,7 @@ app.controller('treeData', function ($scope, $http, TreeData, ngDialog, Operatio
 
 });
 
-app.controller('operationCtrl', function ($scope, $http, OperationList,ngDialog) {
+app.controller('operationCtrl', function ($scope, $http,$interval, OperationList,ngDialog) {
   $scope.operationService = OperationList
   $scope.operations = $scope.operationService.list;
   $scope.projectId = {{project_id}};
@@ -649,6 +736,43 @@ app.controller('operationCtrl', function ($scope, $http, OperationList,ngDialog)
         then(function(response) {
             $scope.templates = response.data
   });
+
+  $scope.runCase = function(){
+        $http.get("/apis/run/"+$scope.operationService.testCase.id).
+        then(function(response) {
+            $scope.operationService.report = response.data;
+            $interval.cancel($scope.refreshPromise);
+            $scope.refresh();
+            $scope.refreshPromise = $interval($scope.refresh,1000);
+        });
+  };
+
+  $scope.runProject = function(){
+        $http.get("/apis/run/"+$scope.projectId).
+        then(function(response) {
+            $scope.operationService.report = response.data;
+            $interval.cancel($scope.refreshPromise);
+            $scope.refresh();
+            $scope.refreshPromise = $interval($scope.refresh,1000);
+        });
+  };
+
+  $scope.refresh = function(){
+        $http.get("/apis/projects/"+$scope.projectId+"/reports/"+$scope.operationService.report.id).
+                then(function(response) {
+                    $scope.result = response.data;
+                    if($scope.result.status == 'finished'){
+                        $interval.cancel($scope.refreshPromise);
+                    }
+        });
+    };
+
+  $scope.getResult = function(report){
+        $interval.cancel($scope.refreshPromise);
+        $scope.currentReport = report;
+        $scope.refresh();
+        $scope.refreshPromise = $interval($scope.refresh,1000);
+    };
 
 });
 

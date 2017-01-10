@@ -3,7 +3,7 @@ import json
 
 data1 = "{a:1,b:2}"
 data2 = '{"a":1,"b":2,"c":"ab"}'
-data3 = '{   "username": "test",   "signature": "260b315d8cfd23ab2b1f1a098638cf70",   "domains": ["test.video.com"],   "start_time": "2016-09-18 09:50",   "end_time": "2016-09-18 09:55"}'
+data3 = '{   "username": "test",   "signature": "96fb06b68e1e9fe8b140def581dae45d",   "domains": ["test.video.com"],   "start_time": "2016-09-18 09:50",   "end_time": "2016-09-18 09:55"}'
 #json.loads(data1)
 data = json.loads(data3)
 print data

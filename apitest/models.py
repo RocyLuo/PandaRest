@@ -29,7 +29,7 @@ class Catalog(models.Model):
 
 class Variable(models.Model):
 
-    catalog = models.ForeignKey(Catalog, blank=True, null=True)
+    catalog = models.ForeignKey(Catalog, related_name='variables',blank=True, null=True)
     data_type = models.CharField(max_length=10, default='str')
     key = models.CharField(max_length=50)
     value = models.CharField(max_length=500)
